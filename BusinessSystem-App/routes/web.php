@@ -11,7 +11,7 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::get('/amazonDownload',[AmazonDownload::class,'download']);
+
 
 Route::get('/export', function () {
 
@@ -36,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/index',[AmazonInputController::class, 'index'])->name('amazon.index');
     Route::post('/create',[AmazonInputController::class, 'create'])->name('amazon.create');
-
+    Route::get('/amazonDownload',[AmazonDownload::class,'download'])->name('amazon.download');
 
 
 

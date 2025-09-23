@@ -78,25 +78,87 @@
         </div>
     </form>
 
+    <div class="text-gray-800 w-full flex flex-col justify-center items-center px-4 bg-gray-50">
+        <form method="GET" action="{{route('amazon.download')}}" >
+        <table>
+            <thead>
+            <tr>
+                <th class="border border-slate-600 bg-blue-300">
+                    NO.
+                </th>
+                <th class="border border-slate-600 bg-blue-300">
+                    Name
+                </th>
+                <th class="border border-slate-600 bg-blue-300">
+                    設定時間
+                </th>
+                <th class="border border-slate-600 bg-blue-300">
+                    ファイルダウンロード
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($amazon_data as $key=>$value)
+                <tr>
+                    <td class="border border-slate-600">
+                        {{ $value->id }}
+                    </td>
+                    <td class="border border-slate-600">
+                        {{ $value->name }}
+                    </td>
+                    <td class="border border-slate-600">
+                        {{ $value->created_at }}
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-primary" name="download" value="{{$value->id}}">
+                            ダウンロード
+                        </button>
+                    </td>
+
+                </tr>
+
+            @endforeach
+
+            </tbody>
+
+        </table>
+        </form>
 
 
+
+    </div>
+    <div class="mt-10 mb-10 ml-20 mr-20">
+        {{$amazon_data->links()}}
+    </div>
 </section>
+
+
+
+
+
+
+
+
 <script>
-    function updateFileName(input) {
-        console.log('ddddd');
-        //const container = input.parentElement;
-        const container = input.closest('.csv-block');
-        const fileNameSpan = container.querySelector('.file-name');
-        const files = input.files;
+function updateFileName(input) {
+    console.log('ddddd');
+    //const container = input.parentElement;
+    const container = input.closest('.csv-block');
+    const fileNameSpan = container.querySelector('.file-name');
+    const files = input.files;
 
-        console.log(files.length);
+    console.log(files.length);
 
-        if (!files.length) {
-            fileNameSpan.textContent = 'No file selected';
-        } else {
-            fileNameSpan.textContent = [...files].map(f => f.name).join(', ');
-        }
+    if (!files.length) {
+        fileNameSpan.textContent = 'No file selected';
+    } else {
+        fileNameSpan.textContent = [...files].map(f => f.name).join(', ');
     }
+}
 </script>
+
+
+
+
 </body>
 </html>

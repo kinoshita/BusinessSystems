@@ -15,7 +15,15 @@ class AmazonInputController extends Controller
     public function index()
     {
         Log::info("index");
-        return view('Amazon.amazonIndex');
+
+        $amazon_data = DB::table('execute_manage_table')
+        ->orderBy('id')->paginate(10);
+
+
+
+
+
+        return view('Amazon.amazonIndex', compact('amazon_data'));
     }
 
     public function create(Request $request)
