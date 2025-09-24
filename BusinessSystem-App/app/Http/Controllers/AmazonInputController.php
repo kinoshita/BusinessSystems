@@ -37,8 +37,7 @@ class AmazonInputController extends Controller
         }
 
         $this->setAmazonData($newCsvFileName, $csvFile);
-        Log:info($csvFile);
-
+        return view('Amazon.amazonFinish');
     }
 
     private function setAmazonData($newCsvFileName, $csvFile)
