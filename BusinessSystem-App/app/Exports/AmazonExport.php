@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\AmazonItem;
+use Carbon\Carbon;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -11,6 +12,8 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style;
+use PhpOffice\PhpSpreadsheet\Reader\Xml\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class AmazonExport implements WithEvents
@@ -60,9 +63,20 @@ class AmazonExport implements WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $line = 1;
-                $date = '09月22日(日)';
+                $now = Carbon::now();
+                $date = $now->format('Y年m月d日');
                 $event->sheet->setCellValue("B{$line}", $date);
+                $event->sheet->getStyle("B{$line}")->getFont()->setBold(true)->setSize(18);
                 $list_name = '出荷リスト(amazon)';
+                $event->sheet->getDelegate()->getStyle("A3:Z3")->applyFromArray([
+                    'borders' => [
+                        'bottom' => [
+                            'borderStyle' => Style\Border::BORDER_THIN,
+                            'color' => ['argb' => '000000'],
+                        ],
+                    ],
+                ]);
+
 
                 $event->sheet->setCellValue("E{$line}", $list_name);
                 // ヘッダ

@@ -12,13 +12,6 @@
 <section class="text-gray-800 w-full min-h-screen flex flex-col justify-center items-center px-4 bg-gray-50">
     <h1 class="text-3xl font-bold mb-6">Import Amazon/Yahoo/楽天 </h1>
     <!-- 操作ボタン -->
-    <div class="flex justify-center gap-4 mb-6">
-        <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 shadow" id="add">Add
-        </button>
-        <button type="button" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 shadow" id="delete">
-            Delete
-        </button>
-    </div>
     <!-- フォーム -->
     <form class="shadow-md rounded-md bg-white w-full max-w-2xl p-8"
           method="POST"
@@ -57,7 +50,6 @@
 
             <!-- File input -->
             <div class="csv-block mb-6">
-                <label class="block text-sm font-semibold mb-1">CSV File:</label>
                 @php $inputId = 'csvFile_' . uniqid(); @endphp
                 <input type="file" class="csv-file hidden" id="{{$inputId}}" name="csvFile" multiple
                        onchange="updateFileName(this)">
@@ -78,55 +70,61 @@
         </div>
     </form>
 
-    <div class="text-gray-800 w-full flex flex-col justify-center items-center px-4 bg-gray-50">
-        <form method="GET" action="{{route('amazon.download')}}" >
-        <table>
-            <thead>
-            <tr>
-                <th class="border border-slate-600 bg-blue-300">
-                    NO.
-                </th>
-                <th class="border border-slate-600 bg-blue-300">
-                    Name
-                </th>
-                <th class="border border-slate-600 bg-blue-300">
-                    設定時間
-                </th>
-                <th class="border border-slate-600 bg-blue-300">
-                    ファイルダウンロード
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach($amazon_data as $key=>$value)
-                <tr>
-                    <td class="border border-slate-600">
-                        {{ $value->id }}
-                    </td>
-                    <td class="border border-slate-600">
-                        {{ $value->name }}
-                    </td>
-                    <td class="border border-slate-600">
-                        {{ $value->created_at }}
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-primary" name="download" value="{{$value->id}}">
-                            ダウンロード
-                        </button>
-                    </td>
 
-                </tr>
 
-            @endforeach
+    <div class="mt-6 w-full max-w-5xl mx-auto px-6">
+        <form method="GET" action="{{ route('amazon.download') }}">
+            @php
+                $csvErrors = session('csv_errors');
+            @endphp
 
-            </tbody>
+            @if(!empty($csvErrors))
+                <div class="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-700">
+                    <p class="font-semibold">CSVエラー</p>
+                    <p class="text-sm text-gray-600 mb-2">ファイル名: {{ $csvErrors['file_name'] }}</p>
+                    @foreach ($csvErrors as $line => $messages)
+                        @if(is_array($messages))
+                            <p class="mt-2 font-medium">row {{ $line }}:</p>
+                            <ul class="list-disc pl-6 text-sm space-y-1">
+                                @foreach ($messages as $message)
+                                    <li>{{ $message }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
 
-        </table>
+            <div class="overflow-x-auto rounded-lg shadow">
+                <table class="min-w-full border-collapse bg-white text-left text-sm text-gray-700">
+                    <thead class="bg-blue-500 text-white">
+                    <tr>
+                        <th class="px-4 py-2 font-medium">NO.</th>
+                        <th class="px-4 py-2 font-medium">Name</th>
+                        <th class="px-4 py-2 font-medium">設定時間</th>
+                        <th class="px-4 py-2 font-medium text-center">ファイルダウンロード</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                    @foreach($amazon_data as $value)
+                        <tr class="hover:bg-blue-50">
+                            <td class="px-4 py-2">{{ $value->id }}</td>
+                            <td class="px-4 py-2">{{ $value->name }}</td>
+                            <td class="px-4 py-2">{{ $value->created_at }}</td>
+                            <td class="px-4 py-2 text-center">
+                                <button type="submit" class="rounded-lg bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 transition"
+                                        name="download" value="{{ $value->id }}">
+                                    ダウンロード
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
         </form>
-
-
-
     </div>
+
     <div class="mt-10 mb-10 ml-20 mr-20">
         {{$amazon_data->links()}}
     </div>
