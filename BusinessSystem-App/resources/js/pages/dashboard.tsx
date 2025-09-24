@@ -4,6 +4,9 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import {Head, router} from '@inertiajs/react';
 
+
+import { Ziggy} from "@/ziggy";
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
@@ -19,9 +22,10 @@ export default function Dashboard() {
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                         {!! <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" /> !!}
-                        <button type="button" className="btn btn-primary m-8 text-center"　onClick={() => window.location.href = route('amazon.index')}>
+                        <a href="/index" className="btn btn-primary m-8 text-center">
                             データ設定
-                        </button>
+                        </a>
+
                     </div>
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                         <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
