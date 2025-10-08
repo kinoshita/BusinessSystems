@@ -117,10 +117,17 @@ class AmazonInputController extends Controller
 
                 foreach ($items as $item){
                     $type = $this->getType($item["product-name"]);
+                    $phone = "";
+                    $phone = $item["buyer-phone-number"];
+                    if (!empty($phone) && !preg_match('/^0/', $phone)) {
+                        $phone = '0' . $phone;
+                    }
+
+
                     AmazonItem::create([
                         'execute_id' => $execute->id,
                         'buyer-name' => $item["buyer-name"],
-                        'buyer-phone-number' => $item["buyer-phone-number"],
+                        'buyer-phone-number' => $phone,
                         'ship-postal-code' => $item["ship-postal-code"],
                         'recipient-name' => $item["recipient-name"],
                         'ship-state' => $item["ship-state"],
