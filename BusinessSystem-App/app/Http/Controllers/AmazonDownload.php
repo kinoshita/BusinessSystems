@@ -71,7 +71,7 @@ class AmazonDownload extends Controller
             ->orderBy('type',)
             ->get();
         $header = new AmazonItem();
-        $csvHeader = $header->csvExchangeHeader2();
+        $csvHeader = $header->csvExchangeHeader3();
         $csvData = $query;
 
         $csvFileName = 'export.csv';
