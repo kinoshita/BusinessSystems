@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AmazonClickPostExport;
 use App\Exports\AmazonExport;
 use App\Models\AmazonItem;
 use App\Models\AmazonYamatoItem;
@@ -31,21 +32,14 @@ class AmazonDownload extends Controller
         $id = $request->input('download');
 
         $this->setBaseFile($id);
-
-
-        //dd($callback);
-
-        /*  return response()->streamDownload($callback, 'test.csv',
-              [
-                  'Content-Type' => 'text/csv; charset=Shift_JIS',
-              ]);
-        */
-
         $this->getClickPost($id);
         $this->getExcel($id);
         $this->getLetterPack($id);
         // yamato
         $this->getYamato($id);
+
+     //   $this->getClikPostExcel($id);
+
 
         $this->downloadZip();
     }
@@ -245,6 +239,39 @@ class AmazonDownload extends Controller
         $output_name = '出荷リスト';
         Excel::store(
             new AmazonExport($query), "files/{$output_name}.xlsx"
+        );
+    }
+
+    private function getClikPostExcel($id)
+    {
+
+        $data = AmazonItem::where('execute_id', $id)->first();
+        $query = DB::table('amazon_data')
+            ->select([
+                'buyer-name as buyer_name',
+                'ship-postal-code as ship_postal_code',
+                "recipient-name as recipient_name",
+                "ship-state as ship_state",
+                "ship-address-1 as ship_address_1",
+                "ship-address-2 as ship_address_2",
+                "ship-address-3 as ship_address_3",
+                "内容品 as content",
+                "quantity-to-ship as quantity_to_ship",
+                "product-name as product_name",
+                "type"
+            ])
+            ->where('execute_id', $id)
+            //->orderBy('type', 'asc')
+            ->orderByRaw('CAST(type AS UNSIGNED) ASC')
+            ->get();
+        Log::info("getExcel");
+        Log::info($query);
+
+
+        // return Excel::download(new AmazonExport($query), 'products.xlsx');
+        $output_name = 'クリックリスト';
+        Excel::store(
+            new AmazonClickPostExport($query), "files/{$output_name}.xlsx"
         );
     }
 
