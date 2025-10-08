@@ -40,7 +40,7 @@ class AmazonItem extends Model
     public function csvExchangeHeader2() : array
     {
         return [
-            "buyer-name",	"ship-postal-code",	"recipient-name", 	"ship-state",
+            "buyer-name","buyer-phone-number",	"ship-postal-code",	"recipient-name", 	"ship-state",
             "ship-address-1", "ship-address-2", "ship-address-3", "内容品", 	"quantity-to-ship",	"product-name"
         ];
     }

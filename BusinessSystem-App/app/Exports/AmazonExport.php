@@ -19,22 +19,22 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class AmazonExport implements WithEvents
 {
     /**
-    * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection
+     */
+    /*
+        public function collection()
+        {
+            //
+            //return AmazonItem::where();
+            return AmazonItem::all();
+        }
     */
-/*
-    public function collection()
-    {
-        //
-        //return AmazonItem::where();
-        return AmazonItem::all();
-    }
-*/
-/*
-    public function view(): View
-    {
+    /*
+        public function view(): View
+        {
 
-    }
-*/
+        }
+    */
     public function __construct($data)
     {
         $this->tour_id = '1';
@@ -93,26 +93,40 @@ class AmazonExport implements WithEvents
                 $type_count['1'] = 1;
                 $type_count['2'] = 1;
                 $type_count['3'] = 1;
-                $type_count['4'] = 1;
-                $type_count['9'] = 1;
+
+                $type_count['10'] = 1;
+                $type_count['11'] = 1;
+
+                $type_count['20'] = 1;
+                $type_count['21'] = 1;
+                $type_count['22'] = 1;
+                $type_count['30'] = 1;
 
                 $before_value = "";
 
-                foreach($this->data as $key=>$value){
+                foreach ($this->data as $key => $value) {
 
-                    if($value->type == '1'){
-
+                    if ($value->type == '1') {
                         $inner_count = $type_count['1'];
-                    }elseif($value->type == '2'){
+                    } elseif ($value->type == '2') {
                         $inner_count = $type_count['2'];
-                    }elseif($value->type == '3'){
+                    } elseif ($value->type == '3') {
                         $inner_count = $type_count['3'];
-                    }elseif($value->type == '4'){
-                        $inner_count = $type_count['4'];
-                    }else{
-                        $inner_count = $type_count['9'];
+                    } elseif ($value->type == '10') {
+                        $inner_count = $type_count['10'];
+
+                    } elseif ($value->type == '11') {
+                        $inner_count = $type_count['11'];
+                    } elseif ($value->type == '20') {
+                        $inner_count = $type_count['20'];
+                    } elseif ($value->type == '21') {
+                        $inner_count = $type_count['21'];
+                    } elseif ($value->type == '22') {
+                        $inner_count = $type_count['22'];
+                    } else {
+                        $inner_count = $type_count['30'];
                     }
-                    if($value->type != $before_value && $count != 4){
+                    if ($value->type != $before_value && $count != 4) {
                         $count++;
                     }
                     $before_value = $value->type;
@@ -120,7 +134,6 @@ class AmazonExport implements WithEvents
                         ->setCellValue("A{$count}", $total_count);
                     $event->sheet
                         ->setCellValue("B{$count}", $inner_count);
-
 
 
                     $event->sheet
@@ -133,19 +146,26 @@ class AmazonExport implements WithEvents
                         ->setCellValue("M{$count}", $value->product_name);
                     $count++;
                     $total_count++;
-                    if($value->type == '1'){
+                    if ($value->type == '1') {
                         $type_count['1'] += 1;
-                    }elseif($value->type == '2'){
+                    } elseif ($value->type == '2') {
                         $type_count['2'] += 1;
-                    }elseif($value->type == '3'){
+                    } elseif ($value->type == '3') {
                         $type_count['3'] += 1;
-                    }elseif($value->type == '4'){
-                        $type_count['4'] += 1;
-                    }else{
-                        $type_count['9'] += 1;
+                    } elseif ($value->type == '10') {
+                        $type_count['10'] += 1;
+                    }elseif ($value->type == '11') {
+                        $type_count['11'] += 1;
+                    }elseif ($value->type == '20') {
+                        $type_count['20'] += 1;
+                    }elseif ($value->type == '21') {
+                        $type_count['21'] += 1;
+                    }elseif ($value->type == '22') {
+                        $type_count['22'] += 1;
+                    } else {
+                        $type_count['30'] += 1;
                     }
                 }
-
 
             }
         ];

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\AmazonExport;
 use App\Models\AmazonItem;
 use App\Models\ClickPost;
+use App\Models\LetterPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -41,6 +42,7 @@ class AmazonDownload extends Controller
 
         $this->getClickPost($id);
         $this->getExcel($id);
+        $this->getLetterPack($id);
         $this->downloadZip();
     }
 
@@ -117,7 +119,8 @@ class AmazonDownload extends Controller
                 "product-name as product_name"
             ])
             ->where('execute_id', $id)
-            ->whereNotIn('type', ['9', '3'])
+            //->whereNotIn('type', ['9', '3'])
+            ->where('file_type', '1')
             ->orderBy('product-name',)
             ->get();
         $header = new ClickPost();
@@ -152,6 +155,64 @@ class AmazonDownload extends Controller
         fclose($file);
     }
 
+    private function getLetterPack($id)
+    {
+        $query = DB::table('amazon_data')
+            ->select([
+                'buyer-name as buyer_name',
+                'buyer-phone-number as buyer_phone_number',
+                'ship-postal-code as ship_postal_code',
+                "recipient-name as recipient_name",
+                "ship-state as ship_state",
+                "ship-address-1 as ship_address_1",
+                "ship-address-2 as ship_address_2",
+                "ship-address-3 as ship_address_3",
+                "内容品 as content",
+                "quantity-to-ship as quantity_to_ship",
+                "product-name as product_name"
+            ])
+            ->where('execute_id', $id)
+            //->whereNotIn('type', ['9', '3'])
+            ->where('file_type', '2')
+            //->orderBy('product-name',)
+            ->get();
+
+        $header = new LetterPack();
+        $csvHeader = $header->csvHeader();
+        $csvData = $query;
+
+        $csvFileName = 'LetterPack.csv';
+        $csvPath = storage_path("app/private/files/{$csvFileName}");
+
+        $file = fopen($csvPath, 'w');
+        // ヘッダー行
+        fputcsv($file, $this->convertEncoding($csvHeader));
+        $row_data = [];
+
+
+        foreach ($csvData as $row) {
+            //dd($row);
+            //$row_data = json_decode(json_encode($row), true);
+            $row_data = [
+                $row->ship_postal_code,
+                $row->recipient_name,
+                '様',
+                $row->ship_state,
+                $row->ship_address_1,
+                $row->ship_address_2,
+                $row->ship_address_3,
+                $row->buyer_phone_number,
+            ];
+
+            fputcsv($file, $this->convertEncoding($row_data));
+        }
+        fclose($file);
+
+    }
+
+
+
+
     // Excel
     private function getExcel($id)
     {
@@ -172,8 +233,12 @@ class AmazonDownload extends Controller
                 "type"
             ])
             ->where('execute_id', $id)
-            ->orderBy('type',)
+            //->orderBy('type', 'asc')
+            ->orderByRaw('CAST(type AS UNSIGNED) ASC')
             ->get();
+        Log::info("getExcel");
+        Log::info($query);
+
 
         // return Excel::download(new AmazonExport($query), 'products.xlsx');
         $output_name = '出荷リスト';

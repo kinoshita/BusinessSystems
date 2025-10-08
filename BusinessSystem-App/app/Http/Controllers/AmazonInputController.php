@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AmazonItem;
+use App\Models\AmazonYamatoItem;
 use App\Models\ExecuteManage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,11 +61,13 @@ class AmazonInputController extends Controller
         $uploadedData = collect(explode("\n", mb_convert_encoding($csv, "UTF-8", "auto")));
         // テーブルとCSVファイルのヘッダーの比較
         //$header = collect($item->csvHeader());
+
         $uploadedHeader = collect(explode(",", $uploadedData->shift()));
         $uploadedHeader[0] = preg_replace('/^\xEF\xBB\xBF/', '', $uploadedHeader[0]);
         Log::info("uploadedHeader");
         Log::info($uploadedHeader);
-
+        Log::info("==== updated Data ====");
+        Log::info($uploadedData);
 
         $amazon_item = new AmazonItem();
         $after_header = collect($amazon_item->csvExchangeHeader2());
@@ -83,27 +86,28 @@ class AmazonInputController extends Controller
             // 必要なヘッダーだけ抽出し、定義された順に並べる
             return $after_header->mapWithKeys(fn($h) => [$h => $assoc->get($h)]);
         });
-        /*
-        $items = $uploadedData->map(function ($oneRecord) use ($indexes) {
 
-
-
-
-            return $indexes->combine(collect(explode(",", $oneRecord)));
+        // yamato用データのみ
+        $yamato_items = $uploadedData->map(function ($oneRecord) use ($uploadedHeader) {
+             $record = collect(explode(",", $oneRecord));
+             $assoc = $uploadedHeader->combine($record);
+             return $assoc;
         });
-        */
-        //dd($items);
 
-        $this->setAmazon($items);
+        Log::info("====- Yamato Items ==== ");
+        Log::info($yamato_items);
+
+        $this->setAmazon($items, $yamato_items);
+
 
 
 
     }
 
-    private function setAmazon($items)
+    private function setAmazon($items, $yamato_items)
     {
         try{
-            $amazon_data = DB::transaction(function() use($items){
+            $amazon_data = DB::transaction(function() use($items, $yamato_items){
                 Log::info("uploadedHeader");
 
                 $execute_name = "Amazon";
@@ -114,20 +118,30 @@ class AmazonInputController extends Controller
                 foreach ($items as $item){
                     $type = $this->getType($item["product-name"]);
                     AmazonItem::create([
-                        'buyer-name' => $item["buyer-name"],
                         'execute_id' => $execute->id,
+                        'buyer-name' => $item["buyer-name"],
+                        'buyer-phone-number' => $item["buyer-phone-number"],
                         'ship-postal-code' => $item["ship-postal-code"],
                         'recipient-name' => $item["recipient-name"],
                         'ship-state' => $item["ship-state"],
                         'ship-address-1' => $item["ship-address-1"],
                         'ship-address-2' => $item["ship-address-2"],
                         'ship-address-3' => $item["ship-address-3"],
-                        '内容品' => $item["内容品"] ?? $type[1],
+                        '内容品' => $item["内容品"] ?? $type[2],
                         'quantity-to-ship' => $item["quantity-to-ship"],
                         'product-name' => $item["product-name"],
-                        'type' => $type[0]
+                        'type' => $type[1],
+                        'file_type' => $type[0],
                     ]);
                 }
+                foreach($yamato_items as $y_item){
+                    $type = $this->getType($y_item["product-name"]);
+                    if($type[0] == '3'){
+                        // yamato分のみデータ設定する
+                        $this->setAmazonYamato($execute->id, $y_item);
+                    }
+                }
+
 
 
             });
@@ -135,9 +149,129 @@ class AmazonInputController extends Controller
             throw new \Exception($e->getMessage());
         }
     }
+    /**
+     *
+     * @param $item
+     * @return void
+     *
+     *
+     */
+    private function setAmazonYamato($execute_id, $item)
+    {
+        AmazonYamatoItem::create([
+            'execute_id' => $execute_id,
+            "order-id" => $item["order-id"],
+            "order-item-id" => $item["order-item-id"],
+            "purchase-date" => $item["purchase-date"],
+            "payments-date" => $item["payments-date"],
+            "reporting-date" => $item["reporting-date"],
+            "promise-date" => $item["promise-date"],
+            "days-past-promise" => $item["days-past-promise"],
+            "buyer-email" => $item["buyer-email"],
+            "buyer-name" => $item["buyer-name"],
 
+
+            "buyer-phone-number" => $item["buyer-phone-number"],
+            "sku" => $item["sku"],
+            "product-name" => $item["product-name"],
+            "quantity-purchased" => $item["quantity-purchased"],
+            "quantity-shipped" => $item["quantity-shipped"],
+            "quantity-to-ship" => $item["quantity-to-ship"],
+            "ship-service-level" => $item["ship-service-level"],
+            "recipient-name" => $item["recipient-name"],
+            "ship-address-1" => $item["ship-address-1"],
+            "ship-address-2" => $item["ship-address-2"],
+            "ship-address-3" => $item["ship-address-3"],
+            "ship-city" => $item["ship-city"],
+            "ship-state" => $item["ship-state"],
+            "ship-postal-code" => $item["ship-postal-code"],
+            "ship-country" => $item["ship-country"],
+            "payment-method" => $item["payment-method"],
+            "cod-collectible-amount" => $item["cod-collectible-amount"],
+            "already-paid" => $item["already-paid"],
+            "payment-method-fee" => $item["payment-method-fee"],
+            "scheduled-delivery-start-date" => $item["scheduled-delivery-start-date"],
+            "scheduled-delivery-end-date" => $item["scheduled-delivery-end-date"],
+            "points-granted" => $item["points-granted"],
+            "is-prime" => $item["is-prime"],
+            "verge-of-cancellation" => $item["verge-of-cancellation"],
+            "verge-of-lateShipment" => $item["verge-of-lateShipment"],
+        ]);
+    }
+
+
+
+
+
+    /**
+     *
+     *
+     * @param $item
+     * @return array
+     * 1: 活性炭パック
+     * 2: 蒸留水器ケーブル
+     * 3: ゴムパッキン
+     *
+     * 10: クエン酸クリーナー
+     * 11: 蒸留水器ノズル
+     * 12:
+     *
+     *
+     * 20: ポリ容器
+     * 21: 井戸パイプ
+     * 22: ガラス容器
+     * 30: 蒸留水器
+     *
+     *  1: クリックポスト
+     *  2: レターパック
+     *  3: ヤマト宅急便
+     *
+     *  変更後の商品名
+     * 　活性炭　パック　=>　活性炭パック
+     *   電源ケーブル　 =>  蒸留水器ケーブル
+     *   ゴムパッキン  => ゴムパッキン
+     *
+     *  クエン酸クリーナー => クエン酸クリーナー
+     *  蒸留水器　専用ノズル => 蒸留水器ノズル
+     *
+     * 　ポリ容器 => ポリ容器
+     *   井戸　パイプ　=> 井戸パイプ
+     * 　ガラス容器　=> ガラス容器
+     *
+     *
+     *
+     *
+     */
     private function getType($item)
     {
+
+        if (preg_match('/活性炭\s+パック/u', $item)) {
+            return [1, 1, '活性炭パック'];
+        }elseif(preg_match('/電源ケーブル/u', $item)){
+            return [1, 2, '蒸留水器ケーブル'];
+        }elseif(preg_match('/ゴムパッキン/u', $item)){
+            return [1, 3, 'ゴムパッキン'];
+        }elseif(preg_match('/クエン酸/u', $item)){
+            return [2, 10, 'クエン酸クリーナー'];
+        }elseif(preg_match('/蒸留水器[\s+]*専用ノズル/u', $item)){
+            return [2, 11, '蒸留水器ノズル'];
+        }elseif(preg_match('/ポリ容器/u', $item)){
+            return [3, 20, 'ポリ容器'];
+        }elseif(preg_match('/井戸.*パイプ/u', $item)){
+            return [3, 21, '井戸パイプ'];
+        }elseif(preg_match('/ガラス容器[\s　]*白/u', $item)){
+            return [3, 22, 'ガラス容器'];
+        }elseif(preg_match('/ガラス容器[\s　]*黒/u', $item)){
+            return [3, 22, 'ガラス容器'];
+        }elseif(preg_match('/ステンレスボディ/u', $item) || preg_match('/スチールボディ/u', $item)){
+            //dd("dddd");
+            return [3, 30, '蒸留水器'];
+        }
+        return [3, 30, '蒸留水器'];
+
+
+/*
+
         if(strpos($item, '活性炭')){
             return [1, '活性炭パック'];
         }elseif (strpos($item, 'ゴムパッキン')){
@@ -149,6 +283,7 @@ class AmazonInputController extends Controller
         }else{
             return [9, ''];
         }
+*/
         //return 9;
     }
 
