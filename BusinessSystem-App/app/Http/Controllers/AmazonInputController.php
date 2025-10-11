@@ -18,7 +18,7 @@ class AmazonInputController extends Controller
     {
         Log::info("index");
         $amazon_data = DB::table('execute_manage_table')
-        ->orderBy('id')->paginate(10);
+            ->orderBy('id')->paginate(10);
         return view('Amazon.amazonIndex', compact('amazon_data'));
     }
 
@@ -32,7 +32,7 @@ class AmazonInputController extends Controller
         $errors = $this->checkCsvHeader($csvFile);
 
         //dd($errors);
-        if (!empty($errors)){
+        if (!empty($errors)) {
             $errors['file_name'] = $newCsvFileName;
             return back()->with('csv_errors', $errors);
         }
@@ -78,7 +78,8 @@ class AmazonInputController extends Controller
 //dd($uploadedData);
 // 並び替え + 不要列削除
         $items = $uploadedData->map(function ($oneRecord) use ($after_header, $uploadedHeader) {
-            $record = collect(explode(",", $oneRecord));
+            $columns = str_getcsv($oneRecord);
+            $record = collect($columns);
 //dd($record, $uploadedHeader);
             // 「アップロードCSVのヘッダー」=>「データ」のペアにする
             $assoc = $uploadedHeader->combine($record);
@@ -89,9 +90,10 @@ class AmazonInputController extends Controller
 
         // yamato用データのみ
         $yamato_items = $uploadedData->map(function ($oneRecord) use ($uploadedHeader) {
-             $record = collect(explode(",", $oneRecord));
-             $assoc = $uploadedHeader->combine($record);
-             return $assoc;
+            $columns = str_getcsv($oneRecord);
+            $record = collect($columns);
+            $assoc = $uploadedHeader->combine($record);
+            return $assoc;
         });
 
         Log::info("====- Yamato Items ==== ");
@@ -100,14 +102,12 @@ class AmazonInputController extends Controller
         $this->setAmazon($items, $yamato_items);
 
 
-
-
     }
 
     private function setAmazon($items, $yamato_items)
     {
-        try{
-            $amazon_data = DB::transaction(function() use($items, $yamato_items){
+        try {
+            $amazon_data = DB::transaction(function () use ($items, $yamato_items) {
                 Log::info("uploadedHeader");
 
                 $execute_name = "Amazon";
@@ -115,7 +115,7 @@ class AmazonInputController extends Controller
                     "name" => $execute_name
                 ]);
 
-                foreach ($items as $item){
+                foreach ($items as $item) {
                     $type = $this->getType($item["product-name"]);
                     $phone = "";
                     $phone = $item["buyer-phone-number"];
@@ -141,21 +141,21 @@ class AmazonInputController extends Controller
                         'file_type' => $type[0],
                     ]);
                 }
-                foreach($yamato_items as $y_item){
+                foreach ($yamato_items as $y_item) {
                     $type = $this->getType($y_item["product-name"]);
-                    if($type[0] == '3'){
+                    if ($type[0] == '3') {
                         // yamato分のみデータ設定する
                         $this->setAmazonYamato($execute->id, $y_item);
                     }
                 }
 
 
-
             });
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
     }
+
     /**
      *
      * @param $item
@@ -207,9 +207,6 @@ class AmazonInputController extends Controller
     }
 
 
-
-
-
     /**
      *
      *
@@ -254,43 +251,43 @@ class AmazonInputController extends Controller
 
         if (preg_match('/活性炭\s+パック/u', $item)) {
             return [1, 1, '活性炭パック'];
-        }elseif(preg_match('/電源ケーブル/u', $item)){
+        } elseif (preg_match('/電源ケーブル/u', $item)) {
             return [1, 2, '蒸留水器ケーブル'];
-        }elseif(preg_match('/ゴムパッキン/u', $item)){
+        } elseif (preg_match('/ゴムパッキン/u', $item)) {
             return [1, 3, 'ゴムパッキン'];
-        }elseif(preg_match('/クエン酸/u', $item)){
+        } elseif (preg_match('/クエン酸/u', $item)) {
             return [2, 10, 'クエン酸クリーナー'];
-        }elseif(preg_match('/蒸留水器[\s+]*専用ノズル/u', $item)){
+        } elseif (preg_match('/蒸留水器[\s+]*専用ノズル/u', $item)) {
             return [2, 11, '蒸留水器ノズル'];
-        }elseif(preg_match('/ポリ容器/u', $item)){
+        } elseif (preg_match('/ポリ容器/u', $item)) {
             return [3, 20, 'ポリ容器'];
-        }elseif(preg_match('/井戸.*パイプ/u', $item)){
+        } elseif (preg_match('/井戸.*パイプ/u', $item)) {
             return [3, 21, '井戸パイプ'];
-        }elseif(preg_match('/ガラス容器[\s　]*白/u', $item)){
+        } elseif (preg_match('/ガラス容器[\s　]*白/u', $item)) {
             return [3, 22, 'ガラス容器'];
-        }elseif(preg_match('/ガラス容器[\s　]*黒/u', $item)){
+        } elseif (preg_match('/ガラス容器[\s　]*黒/u', $item)) {
             return [3, 22, 'ガラス容器'];
-        }elseif(preg_match('/ステンレスボディ/u', $item) || preg_match('/スチールボディ/u', $item)){
+        } elseif (preg_match('/ステンレスボディ/u', $item) || preg_match('/スチールボディ/u', $item)) {
             //dd("dddd");
             return [3, 30, '蒸留水器'];
         }
         return [3, 30, '蒸留水器'];
 
 
-/*
+        /*
 
-        if(strpos($item, '活性炭')){
-            return [1, '活性炭パック'];
-        }elseif (strpos($item, 'ゴムパッキン')){
-            return [2, 'ゴムパッキン'];
-        }elseif (strpos($item, 'パイプ')) {
-            return [3, 'パイプ'];
-        }elseif (strpos($item, 'クリーナー')){
-            return [4, 'クリーナー'];
-        }else{
-            return [9, ''];
-        }
-*/
+                if(strpos($item, '活性炭')){
+                    return [1, '活性炭パック'];
+                }elseif (strpos($item, 'ゴムパッキン')){
+                    return [2, 'ゴムパッキン'];
+                }elseif (strpos($item, 'パイプ')) {
+                    return [3, 'パイプ'];
+                }elseif (strpos($item, 'クリーナー')){
+                    return [4, 'クリーナー'];
+                }else{
+                    return [9, ''];
+                }
+        */
         //return 9;
     }
 
@@ -310,16 +307,19 @@ class AmazonInputController extends Controller
         $uploadedData = $uploadedData->filter(fn($v) => !empty(trim($v)));
         //
         $errors = [];
-        foreach($header as $key=>$value){
-            if($header[$key] !== $uploadedHeader[$key]){
+        foreach ($header as $key => $value) {
+            if ($header[$key] !== $uploadedHeader[$key]) {
                 $errors[0] = '入力したcsvファイルのヘッダと、想定しているヘッダが異なっています。';
                 return $errors;
             }
         }
-        $items = $uploadedData->map(function ($oneRecord) use ($header){
-            return $header->combine(collect(explode(",", $oneRecord)));
-        });
 
+//dd($header);
+        Log::info("oneRecord");
+        $items = $uploadedData->map(function ($oneRecord) use ($header) {
+            $columns = str_getcsv($oneRecord);
+            return $header->combine(collect($columns));
+        });
 //dd($items);
         //$check_data = array_map($uploadedData);
         foreach ($items as $i => $row) {
@@ -330,51 +330,51 @@ class AmazonInputController extends Controller
                 return $errors;
             }
         }
-/*
-        foreach($items as $index=>$row){
-            $rules = [
-                    "order-id"  => ['required'],
-                    "order-item-id"=> ['required'],
-                    "purchase-date"=> ['required'],
-                    "payments-date"=> ['required'],
-                    "reporting-date" => ['required'],
-                    "promise-date" => ['required'],
-                    "days-past-promise " => ['required'],
-                    "buyer-email" => ['required'],
-                    "buyer-name" => ['required'],
-                    "buyer-phone-number" => ['required'],
-                    "sku" => ['required'],
-                    "product-name" => ['required'],
-                    "quantity-purchased" => ['required'],
-                    "quantity-shipped" => ['required'],
-                    "quantity-to-ship" => ['required'],
-                    "ship-service-level" => ['required'],
-                    "recipient-name" => ['required'],
-                    "ship-address-1" => ['required'],
-                    "ship-address-2" => ['required'],
-                    "ship-address-3" => ['required'],
-                    "ship-city" => ['required'],
-                    "ship-state" => ['required'],
-                    "ship-postal-code" => ['required'],
-                    "ship-country" => ['required'],
-                    "payment-method" => ['required'],
-                    "cod-collectible-amount" => ['required'],
-                    "already-paid" => ['required'],
-                    "payment-method-fee" => ['required'],
-                    "scheduled-delivery-start-date" => ['required'],
-                    "scheduled-delivery-end-date" => ['required'],
-                    "points-granted" => ['required'],
-                    "is-prime" => ['required'],
-                    "verge-of-cancellation" => ['required'],
-                    "verge-of-lateShipment" => ['required']
-            ];
-            $validator = Validator::make($row->toArray(), $rules, ['message']);
-            if ($validator->fails()) {
-                $errors[$index] = $validator->errors()->all();
-            }
+        /*
+                foreach($items as $index=>$row){
+                    $rules = [
+                            "order-id"  => ['required'],
+                            "order-item-id"=> ['required'],
+                            "purchase-date"=> ['required'],
+                            "payments-date"=> ['required'],
+                            "reporting-date" => ['required'],
+                            "promise-date" => ['required'],
+                            "days-past-promise " => ['required'],
+                            "buyer-email" => ['required'],
+                            "buyer-name" => ['required'],
+                            "buyer-phone-number" => ['required'],
+                            "sku" => ['required'],
+                            "product-name" => ['required'],
+                            "quantity-purchased" => ['required'],
+                            "quantity-shipped" => ['required'],
+                            "quantity-to-ship" => ['required'],
+                            "ship-service-level" => ['required'],
+                            "recipient-name" => ['required'],
+                            "ship-address-1" => ['required'],
+                            "ship-address-2" => ['required'],
+                            "ship-address-3" => ['required'],
+                            "ship-city" => ['required'],
+                            "ship-state" => ['required'],
+                            "ship-postal-code" => ['required'],
+                            "ship-country" => ['required'],
+                            "payment-method" => ['required'],
+                            "cod-collectible-amount" => ['required'],
+                            "already-paid" => ['required'],
+                            "payment-method-fee" => ['required'],
+                            "scheduled-delivery-start-date" => ['required'],
+                            "scheduled-delivery-end-date" => ['required'],
+                            "points-granted" => ['required'],
+                            "is-prime" => ['required'],
+                            "verge-of-cancellation" => ['required'],
+                            "verge-of-lateShipment" => ['required']
+                    ];
+                    $validator = Validator::make($row->toArray(), $rules, ['message']);
+                    if ($validator->fails()) {
+                        $errors[$index] = $validator->errors()->all();
+                    }
 
-        }
-*/
+                }
+        */
 
 
         return $errors;
