@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\AmazonClickPostExport;
 use App\Exports\AmazonExport;
+use App\Exports\AmazonYamatoExport;
 use App\Models\AmazonItem;
 use App\Models\AmazonYamatoItem;
 use App\Models\ClickPost;
@@ -37,8 +38,11 @@ class AmazonDownload extends Controller
         $this->getLetterPack($id);
         // yamato
         $this->getYamato($id);
-
-     //   $this->getClikPostExcel($id);
+        $this->getYamatoExcel($id);
+        /**
+         * 2025.10.13 作業中
+         */
+        $this->getClikPostExcel($id);
 
 
         $this->downloadZip();
@@ -191,6 +195,17 @@ class AmazonDownload extends Controller
         foreach ($csvData as $row) {
             //dd($row);
             //$row_data = json_decode(json_encode($row), true);
+            // 電話番号を文字列として扱う
+            $phone = $row->buyer_phone_number;
+
+            // 数字以外を除去（念のため）
+	        $phone = preg_replace('/\D/', '', $phone);
+
+            // 先頭が81なら0に置換
+            if (strpos($phone, '81') === 0) {
+                $phone = '0' . substr($phone, 2);
+            }
+
             $row_data = [
                 $row->ship_postal_code,
                 $row->recipient_name,
@@ -199,7 +214,7 @@ class AmazonDownload extends Controller
                 $row->ship_address_1,
                 $row->ship_address_2,
                 $row->ship_address_3,
-                $row->buyer_phone_number,
+                $phone,
             ];
 
             fputcsv($file, $this->convertEncoding($row_data));
@@ -225,7 +240,8 @@ class AmazonDownload extends Controller
                 "内容品 as content",
                 "quantity-to-ship as quantity_to_ship",
                 "product-name as product_name",
-                "type"
+                "type",
+                "file_type"
             ])
             ->where('execute_id', $id)
             //->orderBy('type', 'asc')
@@ -261,6 +277,7 @@ class AmazonDownload extends Controller
                 "type"
             ])
             ->where('execute_id', $id)
+            ->where('file_type', '2')
             //->orderBy('type', 'asc')
             ->orderByRaw('CAST(type AS UNSIGNED) ASC')
             ->get();
@@ -269,7 +286,7 @@ class AmazonDownload extends Controller
 
 
         // return Excel::download(new AmazonExport($query), 'products.xlsx');
-        $output_name = 'クリックリスト';
+        $output_name = 'レターパック';
         Excel::store(
             new AmazonClickPostExport($query), "files/{$output_name}.xlsx"
         );
@@ -370,6 +387,59 @@ class AmazonDownload extends Controller
             fputcsv($file, $this->convertEncoding($row_data));
         }
         fclose($file);
+    }
+
+    public function getYamatoExcel($id)
+    {
+        $output_file = "yamato_excel";
+         $query = DB::table('amazon_data_yamato_transport_ltd')
+             ->select([
+                 "order-id as order_id",
+                 "order-item-id as order_item_id",
+                 "purchase-date as purchase_date",
+                 "payments-date as payments_date",
+                 "reporting-date as reporting_date",
+                 "promise-date as promise_date",
+                 "days-past-promise as days_past_promise",
+                 "buyer-email as buyer_email",
+                 "buyer-name as buyer_name",
+                 "buyer-phone-number as buyer_phone_number",
+                 "sku",
+                 "product-name as product_name",
+                 "quantity-purchased as quantity_purchased",
+                 "quantity-shipped as quantity_shipped",
+                 "quantity-to-ship as quantity_to_ship",
+                 "ship-service-level as ship_service_level",
+                 "recipient-name as recipient_name",
+                 "ship-address-1 as ship_address_1",
+                 "ship-address-2 as ship_address_2",
+                 "ship-address-3 as ship_address_3",
+                 "ship-city as ship_city",
+                 "ship-state as ship_state",
+                 "ship-postal-code as ship_postal_code",
+                 "ship-country as ship_country",
+                 "payment-method as payment_method",
+                 "cod-collectible-amount as cod_collectible_amount",
+                 "already-paid as already_paid",
+                 "payment-method-fee as payment_method_fee",
+                 "scheduled-delivery-start-date as scheduled_delivery_start_date",
+                 "scheduled-delivery-end-date as scheduled_delivery_end_date",
+                 "points-granted as points_granted",
+                 "is-prime as is_prime",
+                 "verge-of-cancellation as verge_of_cancellation",
+                 "verge-of-lateShipment as verge_of_lateShipment",
+             ])
+             ->where('execute_id', $id)
+             //->orderBy('type',)
+             ->get();
+
+        $yamato = new AmazonYamatoItem();
+        $header  = $yamato->csvHeaderForExcelExport();
+
+
+        Excel::store(
+            new AmazonYamatoExport($query, $header), "files/{$output_file}.xlsx"
+        );
     }
 
 
