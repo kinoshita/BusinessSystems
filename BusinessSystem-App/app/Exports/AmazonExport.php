@@ -64,8 +64,8 @@ class AmazonExport implements WithEvents
             AfterSheet::class => function (AfterSheet $event) {
 
 
-                $event->sheet->getDelegate()->getColumnDimension('A')->setWidth(2.5); // A列を幅8に
-                $event->sheet->getDelegate()->getColumnDimension('B')->setWidth(2.5); // B列を幅10に
+                $event->sheet->getDelegate()->getColumnDimension('A')->setWidth(4.0); // A列を幅8に
+                $event->sheet->getDelegate()->getColumnDimension('B')->setWidth(4.0); // B列を幅10に
 
 
                 $line = 1;

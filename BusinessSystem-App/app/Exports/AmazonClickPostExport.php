@@ -34,39 +34,96 @@ class AmazonClickPostExport implements WithEvents
             AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getDelegate()->getSheetView()->setZoomScale(160);
                 $count = count($this->data);
+//dd($count);
 
-
-                $page = floor($count /  12);
+                $page = ceil($count /  14);
                 Log::info("Page");
                 Log::info($page);
 
                 $sheet = $event->sheet->getDelegate();
 
                 // 横線
-                $define = 6;
+                $define = 6; // 1ブロック6行
+                $pageBlock = 2; // 左右2ブロック
+                $totalBlock = 8 * $page ;
 
-                $end = 7 + 7*$page;
+                for ($i = 0; $i < $totalBlock; $i++) {
+                    // 各ブロックの最初の行（1, 7, 13, ...）を算出
+                    $line = $i * $define + 1;
 
-                for($i=0;$i<$end;$i++){
-                    $line = $i*$define + 1;
                     $event->sheet->getDelegate()
                         ->getStyle("A{$line}:F{$line}")
                         ->applyFromArray([
                             'borders' => [
                                 'top' => [
+                                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                    'color' => ['argb' => '000000'],
+                                ],
+                            ],
+                        ]);
+/*
+                    if ($i % 5 == 0 && $i !==0 ){
+                        $event->sheet->getDelegate()
+                            ->getStyle("A{$line}:F{$line}")
+                            ->applyFromArray([
+                                'borders' => [
+                                    'bottom' => [
+                                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                        'color' => ['argb' => '000000'],
+                                    ],
+                                ],
+                            ]);
+                    }
+*/
+
+
+                }
+                // 横線
+                //$page = 2;
+                $plus = 48;
+                for($i=0;$i<$page;$i++) {
+                    $start_line = 1+$plus*$i;
+                    $end_line = 42+$plus*$i;
+                    $event->sheet->getDelegate()
+                        ->getStyle("A{$start_line}:A{$end_line}")
+                        ->applyFromArray([
+                            'borders' => [
+                                'left' => [
                                     'borderStyle' => Style\Border::BORDER_THIN,
                                     'color' => ['argb' => '000000'],
                                 ],
                             ],
                         ]);
 
+                    $event->sheet->getDelegate()
+                        ->getStyle("D{$start_line}:D{$end_line}")
+                        ->applyFromArray([
+                            'borders' => [
+                                'left' => [
+                                    'borderStyle' => Style\Border::BORDER_THIN,
+                                    'color' => ['argb' => '000000'],
+                                ],
+                            ],
+                        ]);
+
+                    $event->sheet->getDelegate()
+                        ->getStyle("F{$start_line}:F{$end_line}")
+                        ->applyFromArray([
+                            'borders' => [
+                                'right' => [
+                                    'borderStyle' => Style\Border::BORDER_THIN,
+                                    'color' => ['argb' => '000000'],
+                                ],
+                            ],
+                        ]);
                 }
+
+
                 foreach (range(1, 100) as $i) {
                  //   $sheet->getRowDimension($i)->setRowHeight(20);
                 }
                 $write_position = 1;
                 foreach ($this->data as $key => $value) {
-                    Log::info("Data .....");
                     //Log::info($value[$key]);
                     if ($key % 14 == 0 && $key !== 0) {
                         $write_position += 6;

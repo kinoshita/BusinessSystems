@@ -42,7 +42,7 @@ class AmazonDownload extends Controller
         /**
          * 2025.10.13 作業中
          */
-        $this->getClikPostExcel($id);
+        $this->getLetterPrintExcel($id);
 
 
         $this->downloadZip();
@@ -78,8 +78,9 @@ class AmazonDownload extends Controller
         $csvHeader = $header->csvExchangeHeader3();
         $csvData = $query;
 
-        $csvFileName = 'export.csv';
-        $csvPath = storage_path("app/private/files/{$csvFileName}");
+        //$csvFileName = 'export.csv';
+        $csvFileName = "全出力リスト";
+        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
 
         $file = fopen($csvPath, 'w');
         // ヘッダー行
@@ -88,6 +89,9 @@ class AmazonDownload extends Controller
         foreach ($csvData as $row) {
             //dd($row);
             //$row_data = json_decode(json_encode($row), true);
+
+            $product_name = preg_replace('/マグネット式電源コードタイプ ピュアポット /', '', $row->product_name);
+
             $row_data = [
                 $row->buyer_name,
                 $row->ship_postal_code,
@@ -98,7 +102,7 @@ class AmazonDownload extends Controller
                 $row->ship_address_3,
                 $row->content,
                 $row->quantity_to_ship,
-                $row->product_name
+                $product_name
             ];
             fputcsv($file, $this->convertEncoding($row_data));
         }
@@ -129,8 +133,9 @@ class AmazonDownload extends Controller
         $csvHeader = $header->csvHeader();
         $csvData = $query;
 
-        $csvFileName = 'clickPost.csv';
-        $csvPath = storage_path("app/private/files/{$csvFileName}");
+        //$csvFileName = 'clickPost.csv';
+        $csvFileName = "クリックポスト";
+        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
 
         $file = fopen($csvPath, 'w');
         // ヘッダー行
@@ -183,8 +188,9 @@ class AmazonDownload extends Controller
         $csvHeader = $header->csvHeader();
         $csvData = $query;
 
-        $csvFileName = 'LetterPack.csv';
-        $csvPath = storage_path("app/private/files/{$csvFileName}");
+        //$csvFileName = 'LetterPack.csv';
+        $csvFileName = "レターパック";
+        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
 
         $file = fopen($csvPath, 'w');
         // ヘッダー行
@@ -258,12 +264,13 @@ class AmazonDownload extends Controller
         );
     }
 
-    private function getClikPostExcel($id)
+    private function getLetterPrintExcel($id)
     {
 
         $data = AmazonItem::where('execute_id', $id)->first();
         $query = DB::table('amazon_data')
             ->select([
+                'id',
                 'buyer-name as buyer_name',
                 'ship-postal-code as ship_postal_code',
                 "recipient-name as recipient_name",
@@ -279,14 +286,14 @@ class AmazonDownload extends Controller
             ->where('execute_id', $id)
             ->where('file_type', '2')
             //->orderBy('type', 'asc')
-            ->orderByRaw('CAST(type AS UNSIGNED) ASC')
+            ->orderBy('id')
             ->get();
         Log::info("getExcel");
         Log::info($query);
 
 
         // return Excel::download(new AmazonExport($query), 'products.xlsx');
-        $output_name = 'レターパック';
+        $output_name = 'レターパック(印刷用)';
         Excel::store(
             new AmazonClickPostExport($query), "files/{$output_name}.xlsx"
         );
@@ -338,8 +345,9 @@ class AmazonDownload extends Controller
         $csvHeader = $header->csvHeader();
         $csvData = $query;
 //dd($query);
-        $csvFileName = 'yamato.csv';
-        $csvPath = storage_path("app/private/files/{$csvFileName}");
+        //$csvFileName = 'yamato.csv';
+        $csvFileName = "ヤマト運輸";
+        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
 
         $file = fopen($csvPath, 'w');
         // ヘッダー行
@@ -391,7 +399,8 @@ class AmazonDownload extends Controller
 
     public function getYamatoExcel($id)
     {
-        $output_file = "yamato_excel";
+        //$output_file = "yamato_excel";
+        $output_file = "ヤマト運輸(Excel)";
          $query = DB::table('amazon_data_yamato_transport_ltd')
              ->select([
                  "order-id as order_id",
