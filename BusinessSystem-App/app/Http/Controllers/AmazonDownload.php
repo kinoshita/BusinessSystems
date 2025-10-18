@@ -156,7 +156,8 @@ class AmazonDownload extends Controller
                 $row->ship_address_3,
                 $row->content,
             ];
-
+            //Log::info("Click post");
+            //Log::info(print_r($row_data,true));
             fputcsv($file, $this->convertEncoding($row_data));
         }
         fclose($file);

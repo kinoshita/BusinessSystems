@@ -18,7 +18,7 @@ class AmazonInputController extends Controller
     {
         Log::info("index");
         $amazon_data = DB::table('execute_manage_table')
-            ->orderBy('id')->paginate(10);
+            ->orderBy('id','desc')->paginate(10);
         return view('Amazon.amazonIndex', compact('amazon_data'));
     }
 

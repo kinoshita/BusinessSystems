@@ -121,10 +121,11 @@ class AmazonExport implements WithEvents
                     } else {
                         $inner_count = $type_count['3'];
                     }
-                    if ($value->type != $before_value && $count != 4) {
+
+                    if ($value->file_type != $before_value && $count != 4) {
                         $count++;
                     }
-                    $before_value = $value->type;
+                    $before_value = $value->file_type;
                     $event->sheet
                         ->setCellValue("A{$count}", $total_count);
                     $event->sheet
