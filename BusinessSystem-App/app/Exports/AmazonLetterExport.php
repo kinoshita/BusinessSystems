@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style;
-class AmazonClickPostExport implements WithEvents
+class AmazonLetterExport implements WithEvents
 {
     private $data;
     public function __construct($data)
@@ -36,16 +36,16 @@ class AmazonClickPostExport implements WithEvents
                 $count = count($this->data);
 //dd($count);
 
-                $page = ceil($count /  14);
+                $page = ceil($count /  10);
                 Log::info("Page");
                 Log::info($page);
 
                 $sheet = $event->sheet->getDelegate();
 
                 // 横線
-                $define = 6; // 1ブロック6行
+                $define = 8; // 1ブロック7行
                 $pageBlock = 2; // 左右2ブロック
-                $totalBlock = 8 * $page ;
+                $totalBlock = 6 * $page ;
 
                 for ($i = 0; $i < $totalBlock; $i++) {
                     // 各ブロックの最初の行（1, 7, 13, ...）を算出
@@ -80,10 +80,10 @@ class AmazonClickPostExport implements WithEvents
                 }
                 // 横線
                 //$page = 2;
-                $plus = 48;
+                $plus = 47;
                 for($i=0;$i<$page;$i++) {
                     $start_line = 1+$plus*$i;
-                    $end_line = 42+$plus*$i;
+                    $end_line = 48+$plus*$i;
                     $event->sheet->getDelegate()
                         ->getStyle("A{$start_line}:A{$end_line}")
                         ->applyFromArray([
@@ -118,20 +118,16 @@ class AmazonClickPostExport implements WithEvents
                         ]);
                 }
 
-
-                foreach (range(1, 100) as $i) {
-                 //   $sheet->getRowDimension($i)->setRowHeight(20);
-                }
                 $write_position = 1;
                 foreach ($this->data as $key => $value) {
                     //Log::info($value[$key]);
-                    if ($key % 14 == 0 && $key !== 0) {
-                        $write_position += 6;
+                    if ($key % 10 == 0 && $key !== 0) {
+                        $write_position += 8;
                     }
 
 
                     if($key % 2 == 0 && $key !== 0) {
-                        $write_position += 6;
+                        $write_position += 8;
                     }
                     if ($key % 2 == 0 && $key !== 1) {
                         $event->sheet
@@ -157,10 +153,15 @@ class AmazonClickPostExport implements WithEvents
                         $event->sheet
                             ->setCellValue("A{$address_3}", $value->ship_address_3);
 
-                        $name = 5;
+                        $tel = 6;
+                        $tel = $tel + $write_position;
+                        $event->sheet
+                            ->setCellValue("A{$tel}", $value->buyer_phone_number);
+
+                        $name = 7;
                         $name  = $name + $write_position;
                         $event->sheet
-                            ->setCellValue("A{$name}", $value->recipient_name);
+                            ->setCellValue("A{$name}", $value->recipient_name . '様');
 
 
                     }else {
@@ -188,18 +189,18 @@ class AmazonClickPostExport implements WithEvents
                         $event->sheet
                             ->setCellValue("D{$address_3}", $value->ship_address_3);
 
-                        $name = 5;
+                        $tel = 6;
+                        $tel = $tel + $write_position;
+                        $event->sheet
+                            ->setCellValue("A{$tel}", $value->buyer_phone_number);
+
+                        $name = 7;
                         $name  = $name + $write_position;
                         $event->sheet
-                            ->setCellValue("D{$name}", $value->recipient_name);
+                            ->setCellValue("D{$name}", $value->recipient_name . '様');
 
                     }
-
-
-
                 }
-
-
                 $highestRow = $sheet->getHighestRow(); // データ最終行を自動取得
                 $sheet->getPageSetup()->setPrintArea("A1:F{$highestRow}");
             }

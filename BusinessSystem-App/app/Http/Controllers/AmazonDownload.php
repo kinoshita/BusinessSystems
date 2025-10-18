@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\AmazonClickPostExport;
+use App\Exports\AmazonLetterExport;
 use App\Exports\AmazonExport;
 use App\Exports\AmazonYamatoExport;
 use App\Models\AmazonItem;
@@ -273,6 +273,7 @@ class AmazonDownload extends Controller
             ->select([
                 'id',
                 'buyer-name as buyer_name',
+                'buyer-phone-number as buyer_phone_number',
                 'ship-postal-code as ship_postal_code',
                 "recipient-name as recipient_name",
                 "ship-state as ship_state",
@@ -296,7 +297,7 @@ class AmazonDownload extends Controller
         // return Excel::download(new AmazonExport($query), 'products.xlsx');
         $output_name = 'レターパック(印刷用)';
         Excel::store(
-            new AmazonClickPostExport($query), "files/{$output_name}.xlsx"
+            new AmazonLetterExport($query), "files/{$output_name}.xlsx"
         );
     }
 
