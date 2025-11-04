@@ -56,7 +56,7 @@ class AmazonLetterExport implements WithEvents
                         ->applyFromArray([
                             'borders' => [
                                 'top' => [
-                                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_HAIR,
                                     'color' => ['argb' => '000000'],
                                 ],
                             ],
@@ -89,7 +89,7 @@ class AmazonLetterExport implements WithEvents
                         ->applyFromArray([
                             'borders' => [
                                 'left' => [
-                                    'borderStyle' => Style\Border::BORDER_THIN,
+                                    'borderStyle' => Style\Border::BORDER_HAIR,
                                     'color' => ['argb' => '000000'],
                                 ],
                             ],
@@ -100,7 +100,7 @@ class AmazonLetterExport implements WithEvents
                         ->applyFromArray([
                             'borders' => [
                                 'left' => [
-                                    'borderStyle' => Style\Border::BORDER_THIN,
+                                    'borderStyle' => Style\Border::BORDER_HAIR,
                                     'color' => ['argb' => '000000'],
                                 ],
                             ],
@@ -111,7 +111,7 @@ class AmazonLetterExport implements WithEvents
                         ->applyFromArray([
                             'borders' => [
                                 'right' => [
-                                    'borderStyle' => Style\Border::BORDER_THIN,
+                                    'borderStyle' => Style\Border::BORDER_HAIR,
                                     'color' => ['argb' => '000000'],
                                 ],
                             ],
@@ -153,16 +153,17 @@ class AmazonLetterExport implements WithEvents
                         $event->sheet
                             ->setCellValue("A{$address_3}", $value->ship_address_3);
 
-                        $tel = 6;
-                        $tel = $tel + $write_position;
-                        $event->sheet
-                            ->setCellValue("A{$tel}", $value->buyer_phone_number);
-
-                        $name = 7;
+                        $name = 6;
                         $name  = $name + $write_position;
                         $event->sheet
                             ->setCellValue("A{$name}", $value->recipient_name . '様');
-
+                        $tel = 7;
+                        $tel = $tel + $write_position;
+                        $event->sheet
+                            ->setCellValue("A{$tel}", $value->buyer_phone_number);
+			// 広げる
+			$event->sheet->getDelegate()->getColumnDimension('A')->setWidth(22);
+			$event->sheet->getDelegate()->getColumnDimension('D')->setWidth(22);
 
                     }else {
                         //dd($value);
@@ -189,15 +190,18 @@ class AmazonLetterExport implements WithEvents
                         $event->sheet
                             ->setCellValue("D{$address_3}", $value->ship_address_3);
 
-                        $tel = 6;
-                        $tel = $tel + $write_position;
-                        $event->sheet
-                            ->setCellValue("A{$tel}", $value->buyer_phone_number);
-
-                        $name = 7;
+                        $name = 6;
                         $name  = $name + $write_position;
                         $event->sheet
                             ->setCellValue("D{$name}", $value->recipient_name . '様');
+
+                        $tel = 7;
+                        $tel = $tel + $write_position;
+                        $event->sheet
+                            ->setCellValue("D{$tel}", $value->buyer_phone_number);
+			// 広げる
+			$event->sheet->getDelegate()->getColumnDimension('A')->setWidth(22);
+			$event->sheet->getDelegate()->getColumnDimension('D')->setWidth(22);
 
                     }
                 }

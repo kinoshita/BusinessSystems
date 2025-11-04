@@ -63,6 +63,11 @@ class AmazonExport implements WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
 
+                // 印刷範囲を指定（例: A1～H40までを印刷範囲にする）
+                $event->sheet->getPageSetup()->setPrintArea("A1:L58");
+
+                // 印刷倍率を80%に設定
+                $event->sheet->getDelegate()->getPageSetup()->setScale(80);
 
                 $event->sheet->getDelegate()->getColumnDimension('A')->setWidth(4.0); // A列を幅8に
                 $event->sheet->getDelegate()->getColumnDimension('B')->setWidth(4.0); // B列を幅10に
@@ -71,7 +76,11 @@ class AmazonExport implements WithEvents
                 $line = 1;
                 $now = Carbon::now();
                 $date = $now->format('Y年m月d日');
+                //$event->sheet->setCellValue("B{$line}:C{$line}", $date);
+
+                $event->sheet->getDelegate()->mergeCells("B{$line}:D{$line}");
                 $event->sheet->setCellValue("B{$line}", $date);
+
                 $event->sheet->getStyle("B{$line}")->getFont()->setBold(true)->setSize(18);
                 $list_name = '出荷リスト(amazon)';
                 $event->sheet->getDelegate()->getStyle("A3:Z3")->applyFromArray([
