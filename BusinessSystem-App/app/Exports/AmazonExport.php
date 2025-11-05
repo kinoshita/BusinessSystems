@@ -119,6 +119,12 @@ class AmazonExport implements WithEvents
 
                 $before_value = "";
 
+
+
+                $recipient_counts = collect($this->data)->groupBy('recipient_name')->map->count();
+                $duplicates = $recipient_counts->filter(fn($count) => $count > 1)->keys();
+
+
                 foreach ($this->data as $key => $value) {
 
                     if ($value->file_type == '1') {
@@ -145,6 +151,19 @@ class AmazonExport implements WithEvents
                         ->setCellValue("C{$count}", $value->buyer_name);
                     $event->sheet
                         ->setCellValue("E{$count}", $value->recipient_name);
+
+                    if ($duplicates->contains($value->recipient_name)) {
+                        $event->sheet->getStyle("E{$count}")
+                            ->applyFromArray([
+                                'font' => [
+                                    'color' => ['rgb' => 'FF0000'],
+                                ],
+                            ]);
+                    }
+
+
+
+
                     $event->sheet
                         ->setCellValue("F{$count}", $value->quantity_to_ship);
 
