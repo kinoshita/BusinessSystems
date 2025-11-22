@@ -23,10 +23,20 @@ export default function Dashboard() {
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                         {!! <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" /> !!}
                         <a href="/index" className="btn btn-primary m-8 text-center">
-                            データ設定
+                            データ設定 (Amazon)
                         </a>
-
                     </div>
+                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                        {!! <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" /> !!}
+                        <a href="/rakutenIndex" className="btn btn-primary m-8 text-center">
+                            データ設定 (楽天)
+                        </a>
+                    </div>
+
+
+
+
+
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                         <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                     </div>

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AmazonDownload;
 use App\Http\Controllers\AmazonInputController;
+use App\Http\Controllers\RakutenDownloadController;
+use App\Http\Controllers\RakutenInputController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -38,8 +40,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/create',[AmazonInputController::class, 'create'])->name('amazon.create');
     Route::get('/amazonDownload',[AmazonDownload::class,'download'])->name('amazon.download');
 
-
-
+    // 楽天
+    Route::get('/rakutenIndex', [RakutenInputController::class, 'index'])->name("rakuten.index");
+    Route::post('/rakutenCreate', [RakutenInputController::class, 'create'])->name("rakuten.create");
+    Route::get('/rakutenDownload',[RakutenDownloadController::class, 'download'])->name("rakuten.download");
+    // Yahoo
 
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
