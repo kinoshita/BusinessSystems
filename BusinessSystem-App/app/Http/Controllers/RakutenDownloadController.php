@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Exports\RakutenExport;
 use App\Exports\RakutenLetterExport;
 use App\Models\ClickPost;
+use App\Models\ExecuteRakutenManage;
 use App\Models\LetterPack;
 use App\Models\RakutenItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use ZipStream\ZipStream;
 
 class RakutenDownloadController extends Controller
 {
@@ -17,12 +21,23 @@ class RakutenDownloadController extends Controller
     public function download(Request $request)
     {
         $rakuten_id = $request->get('rakuten_id');
+        $manage = new ExecuteRakutenManage();
+        $directory = $manage->getRakutenBaseDirectory();
+        // rakuten directory内のデータ削除
+        $files = Storage::disk('local')->files('files/rakuten');
+        Log::info('Files array', $files);
+        Storage::disk('local')->delete($files);
+
+
+
+        //dd("rakuten download");
+
         $this->getBaseFileForRakuten($rakuten_id);
         $this->getClickPost($rakuten_id);
         $this->getLetterPack($rakuten_id);
         $this->getExcelRakuten($rakuten_id);
         $this->getLetterPackPrintExcel($rakuten_id);
-
+        $this->downloadRakutenZip();
     }
 
     private function getBaseFileForRakuten($rakuten_id)
@@ -34,11 +49,14 @@ class RakutenDownloadController extends Controller
             ->get();
 
         $header = new RakutenItem();
+        $manage = new ExecuteRakutenManage();
         $csvHeader = $header->csvExchangeHeader();
         $csvData = $query;
 
         $csvFileName = "楽天全出力リスト";
-        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
+        //$csvPath = storage_path("app/private/files/{$csvFileName}.csv");
+
+        $csvPath = $manage->getRakutenCsvDirectory($csvFileName);
         $file = fopen($csvPath, 'w');
         // ヘッダー行
         fputcsv($file, $this->convertEncoding($csvHeader));
@@ -86,7 +104,7 @@ class RakutenDownloadController extends Controller
 
         $output_name = '楽天レターパック(印刷用)';
         Excel::store(
-            new RakutenLetterExport($query), "files/{$output_name}.xlsx"
+            new RakutenLetterExport($query), "files/rakuten/{$output_name}.xlsx"
         );
 
     }
@@ -101,11 +119,13 @@ class RakutenDownloadController extends Controller
             ->get();
 
         $header = new ClickPost();
+        $manage = new ExecuteRakutenManage();
         $csvHeader = $header->csvHeader();
         $csvData = $query;
 
         $csvFileName = "楽天クリックポスト";
-        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
+        $csvPath = $manage->getRakutenCsvDirectory($csvFileName);
+        //$csvPath = storage_path("app/private/files/{$csvFileName}.csv");
         $file = fopen($csvPath, 'w');
         // ヘッダー行
         fputcsv($file, $this->convertEncoding($csvHeader));
@@ -142,10 +162,13 @@ class RakutenDownloadController extends Controller
 
         // ヘッダ取得
         $header = new LetterPack();
+        $manage = new ExecuteRakutenManage();
         $csvHeader = $header->csvHeader();
+
         $csvData = $query;
         $csvFileName = "楽天用レターパック";
-        $csvPath = storage_path("app/private/files/{$csvFileName}.csv");
+        $csvPath = $manage->getRakutenCsvDirectory($csvFileName);
+        //$csvPath = storage_path("app/private/files/{$csvFileName}.csv");
         $file = fopen($csvPath, 'w');
         fputcsv($file, $this->convertEncoding($csvHeader));
         $row_data = [];
@@ -175,11 +198,10 @@ class RakutenDownloadController extends Controller
             ->get();
         $output_name = '出荷リスト(楽天)';
         Excel::store(
-            new RakutenExport($query), "files/{$output_name}.xlsx"
+            new RakutenExport($query), "files/rakuten/{$output_name}.xlsx"
         );
 
     }
-
 
     private function convertEncoding($array)
     {
@@ -187,4 +209,24 @@ class RakutenDownloadController extends Controller
             return mb_convert_encoding($value, 'SJIS-win', 'UTF-8');
         }, $array);
     }
+
+    private function downloadRakutenZip()
+    {
+        $zipFileName = 'rakutenFiles.zip';
+        $outputStream = fopen('php://output', 'w');
+        $zip = new ZipStream(
+            outputStream: $outputStream,
+            sendHttpHeaders: true,
+            outputName: $zipFileName
+        );
+        $files = Storage::files('files/rakuten');
+        foreach ($files as $file) {
+            $stream = Storage::readStream($file);
+            $zip->addFileFromStream(fileName: basename($file), stream: $stream);
+            fclose($stream);
+        }
+        $zip->finish();
+    }
+
+
 }

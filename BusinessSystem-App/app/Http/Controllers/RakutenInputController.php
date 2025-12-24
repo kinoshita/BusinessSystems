@@ -29,6 +29,7 @@ class RakutenInputController extends Controller
         // ヘッダ、データチェック
         $errors = [];
         $this->setRakutenData($newCsvFileName, $csvFile);
+        return view('Rakuten.rakutenFinish');
     }
 
     private function setRakutenData($newCsvFileName, $csvFile)

@@ -6,38 +6,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 
-class ExecuteRakutenManage extends Model
+class ExecuteYahooManage extends Model
 {
     //
     use HasFactory;
-    protected $table = 'execute_rakuten_manage';
+    protected $table = 'execute_yahoo_manage';
     protected $guarded = [
-      'id',
+        'id',
     ];
 
-    protected $base_directory = 'app/private/files/rakuten';
+    protected $base_directory = 'app/private/files/yahoo';
 
-    public function getRakutenBaseDirectory()
+    public function getYahooBaseDirectory()
     {
-        $directory = $this->base_directory;
+        $directory = storage_path($this->base_directory);
         if (!File::exists($directory)) {
             File::makeDirectory($directory, 0777, true);
         }
-
-        //dd($directory);
-
         return $this->base_directory;
     }
 
-
-    public function getRakutenCsvDirectory($fileName):String
+    public function getYahooCsvDirectory($fileName):String
     {
-        $dirPath = storage_path("app/private/files/rakuten");
-        // ディレクトリがなければ作成
+        $dirPath = storage_path($this->base_directory);
         if (!File::exists($dirPath)) {
             File::makeDirectory($dirPath, 0777, true);
         }
-
         return "{$dirPath}/{$fileName}.csv";
     }
 }

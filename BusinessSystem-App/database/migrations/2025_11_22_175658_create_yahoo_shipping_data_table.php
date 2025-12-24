@@ -13,6 +13,16 @@ return new class extends Migration
     {
         Schema::create('yahoo_shipping_data', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('OrderId');
+	        $table->bigInteger('execute_yahoo_id');
+            $table->bigInteger('LineId');
+            $table->string("ItemId");
+            $table->string("Title");
+            $table->string("SubCode");
+            $table->string("Quantity");
+            $table->string("content");
+            $table->string("file_type");
+            $table->string("type");
             $table->timestamps();
         });
     }

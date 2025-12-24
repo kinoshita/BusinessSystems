@@ -4,6 +4,8 @@ use App\Http\Controllers\AmazonDownload;
 use App\Http\Controllers\AmazonInputController;
 use App\Http\Controllers\RakutenDownloadController;
 use App\Http\Controllers\RakutenInputController;
+use App\Http\Controllers\YahooDownloadController;
+use App\Http\Controllers\YahooInputController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -44,7 +46,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/rakutenIndex', [RakutenInputController::class, 'index'])->name("rakuten.index");
     Route::post('/rakutenCreate', [RakutenInputController::class, 'create'])->name("rakuten.create");
     Route::get('/rakutenDownload',[RakutenDownloadController::class, 'download'])->name("rakuten.download");
+
     // Yahoo
+    Route::get('/yahooIndex', [YahooInputController::class, 'index'])->name("yahoo.index");
+    Route::post('/yahooCreate', [YahooInputController::class, 'create'])->name("yahoo.create");
+    Route::get('/yahooDownload',[YahooDownloadController::class, 'download'])->name("yahoo.download");
+
+
 
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
