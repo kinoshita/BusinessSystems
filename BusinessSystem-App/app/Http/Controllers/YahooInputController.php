@@ -223,26 +223,49 @@ class YahooInputController extends Controller
         }
     }
 
+    /**
+     * @param $item
+     * @return array|int[]
+     *
+     *
+     *
+     */
+
+
     private function getType($item)
     {
-        if (preg_match('/活性炭\s+パック/u', $item)) {
+        if (preg_match('/活性炭パック/u', $item)) {
             return [1, 1, '活性炭パック'];
-        } elseif (preg_match('/電源ケーブル/u', $item)) {
-            return [1, 2, '蒸留水器ケーブル'];
+        } elseif (preg_match('/ソケット式ケーブル/u', $item)) {
+            return [1, 2, '電源ケーブル'];
+        } elseif (preg_match('/マグネット式ケーブル/u', $item)) {
+            return [1, 2, '電源ケーブル'];
         } elseif (preg_match('/ゴムパッキン/u', $item)) {
             return [1, 3, 'ゴムパッキン'];
+        } elseif (preg_match('/２個セット.*あさくま/u', $item)) {
+            return [1, 4, '食品'];
+        } elseif (preg_match('/オドレミン/u', $item)) {
+            return [1, 5, 'ボディクリーム'];
+
+
+
         } elseif (preg_match('/クエン酸/u', $item)) {
             return [2, 10, 'クエン酸クリーナー'];
         } elseif (preg_match('/蒸留水器[\s+]*専用ノズル/u', $item)) {
-            return [2, 11, '蒸留水器ノズル'];
+            return [2, 11, '蒸留水器　ノズル'];
+        } elseif (preg_match('/6個セット.*あさくま/u', $item)) {
+            return [2, 12, '食品'];
+        } elseif (preg_match('/専用.*ノズル/u', $item)) {
+            return [2, 13, '蒸留水器　ノズル'];
         } elseif (preg_match('/ポリ容器/u', $item)) {
             return [3, 20, 'ポリ容器'];
         } elseif (preg_match('/井戸.*パイプ/u', $item)) {
             return [3, 21, '井戸パイプ'];
-        } elseif (preg_match('/ガラス容器[\s　]*白/u', $item)) {
+        } elseif (preg_match('/ガラス容器/u', $item)) {
             return [3, 22, 'ガラス容器'];
-        } elseif (preg_match('/ガラス容器[\s　]*黒/u', $item)) {
-            return [3, 22, 'ガラス容器'];
+        } elseif (preg_match('/埃掃除サービス/u', $item)) {
+            return [3, 23, 'ホコリ取りサービス'];
+
         } elseif (preg_match('/ステンレスボディ/u', $item) || preg_match('/スチールボディ/u', $item)) {
             //dd("dddd");
             return [3, 30, '蒸留水器'];

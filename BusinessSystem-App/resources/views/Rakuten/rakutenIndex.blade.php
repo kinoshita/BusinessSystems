@@ -10,7 +10,7 @@
 </head>
 <body>
 <section class="text-gray-800 w-full min-h-screen flex flex-col justify-center items-center px-4 bg-gray-50">
-    <h1 class="text-3xl font-bold mb-6">Import Amazon/Yahoo/楽天 </h1>
+    <h1 class="text-3xl font-bold mb-6">Import 楽天</h1>
     <!-- 操作ボタン -->
     <!-- フォーム -->
     <form class="shadow-md rounded-md bg-white w-full max-w-2xl p-8"

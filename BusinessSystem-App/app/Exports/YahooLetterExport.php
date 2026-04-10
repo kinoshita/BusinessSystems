@@ -30,6 +30,10 @@ class YahooLetterExport implements WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getDelegate()->getSheetView()->setZoomScale(160);
+
+                Log::info("registerEvents Yahoo Data");
+                Log::info($this->data);
+
                 //$count = count($this->data);
                 $count = collect($this->data)->reduce(function ($carry, $item) {
                     $arr = [];

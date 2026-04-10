@@ -13,6 +13,7 @@ use App\Models\YahooItem;
 use App\Models\YahooItemDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipStream\ZipStream;
@@ -45,18 +46,30 @@ class YahooDownloadController extends Controller
 
     private function getLetterPackPrintExcel($yahoo_id)
     {
+
         $yahoo_data = YahooItem::with([
             'YahooItemDetail' => function ($query)  use ($yahoo_id) {
                 $query->where('execute_yahoo_id', $yahoo_id)
                     ->where('file_type', '2');
             }])
             ->where('execute_yahoo_id', $yahoo_id)
+            ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', '2');
+            })
             //->orderBy('type')
             ->get();
         $output_name = 'Yahooレターパック(印刷用)';
+
+        Log::info("test test");
+        Log::info($yahoo_data);
+
+
+
         Excel::store(
             new YahooLetterExport($yahoo_data), "files/yahoo/{$output_name}.xlsx"
         );
+
     }
 
 
