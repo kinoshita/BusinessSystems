@@ -9,6 +9,9 @@
     <title>Document</title>
 </head>
 <body>
+<div class="flex justify-end mt-4 mb-2 mr-20">
+    <button class="btn bg-blue-600 text-white font-bold" onclick="location.href='{{route('dashboard')}}'">Top</button>
+</div>
 <section class="text-gray-800 w-full min-h-screen flex flex-col justify-center items-center px-4 bg-gray-50">
     <h1 class="text-3xl font-bold mb-6">Import 楽天</h1>
     <!-- 操作ボタン -->
