@@ -75,13 +75,33 @@ class YahooDownloadController extends Controller
 
     private function getExcelYahoo($yahoo_id)
     {
+        /*
         $yahoo_data = YahooItem::with([
             'YahooItemDetail' => function ($query)  use ($yahoo_id) {
-            $query->where('execute_yahoo_id', $yahoo_id);
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC');
             }])
             ->where('execute_yahoo_id', $yahoo_id)
-            //->orderBy('type')
+            ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id);
+            })
+
             ->get();
+        */
+        $yahoo_data = YahooItem::where('execute_yahoo_id', $yahoo_id)
+            ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id);
+            })
+            ->with(['YahooItemDetail' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC');
+            }])
+            ->withMin(['YahooItemDetail as min_type' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id);
+            }], 'type')
+            ->orderByRaw('CAST(min_type AS UNSIGNED) ASC')
+            ->get();
+//dd($yahoo_data);
         $output_name = '出荷リスト(Yahoo)';
         Excel::store(
             new YahooExport($yahoo_data), "files/yahoo/{$output_name}.xlsx"
