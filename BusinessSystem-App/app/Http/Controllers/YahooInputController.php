@@ -234,41 +234,64 @@ class YahooInputController extends Controller
 
     private function getType($item)
     {
-        if (preg_match('/活性炭パック/u', $item)) {
-            return [1, 1, '活性炭パック'];
-        } elseif (preg_match('/ソケット式ケーブル/u', $item)) {
-            return [1, 2, '電源ケーブル'];
-        } elseif (preg_match('/マグネット式ケーブル/u', $item)) {
-            return [1, 2, '電源ケーブル'];
-        } elseif (preg_match('/ゴムパッキン/u', $item)) {
-            return [1, 3, 'ゴムパッキン'];
-        } elseif (preg_match('/２個セット.*あさくま/u', $item)) {
-            return [1, 4, '食品'];
-        } elseif (preg_match('/オドレミン/u', $item)) {
+        if (preg_match('/２個セット.*あさくま/u', $item)) {
+            return [1, 1, '食品'];
+        } elseif (preg_match('/２本セット[\s+]*オドレミン/u', $item)) {
+            return [1, 3, 'ボディクリーム'];
+        } elseif (preg_match('/３本セット[\s+]*オドレミン/u', $item)) {
+            return [1, 4, 'ボディクリーム'];
+        } elseif (preg_match('/４本セット[\s+]*オドレミン/u', $item)) {
             return [1, 5, 'ボディクリーム'];
-
-
-
-        } elseif (preg_match('/クエン酸/u', $item)) {
-            return [2, 10, 'クエン酸クリーナー'];
-        } elseif (preg_match('/蒸留水器[\s+]*専用ノズル/u', $item)) {
-            return [2, 11, '蒸留水器　ノズル'];
-        } elseif (preg_match('/6個セット.*あさくま/u', $item)) {
+        } elseif (preg_match('/５本セット[\s+]*オドレミン/u', $item)) {
+            return [1, 6, 'ボディクリーム'];
+        } elseif (preg_match('/オドレミン/u', $item)) {
+            return [1, 2, 'ボディクリーム'];
+        } elseif (preg_match('/活性炭パック[\s+]*12個入り/u', $item)) {
+            return [1, 7, '活性炭パック'];
+        } elseif (preg_match('/活性炭パック/u', $item)) {
+            return [1, 8, '活性炭パック'];
+        } elseif (preg_match('/ゴムパッキン/u', $item)) {
+            return [1, 9, 'ゴムパッキン'];
+        } elseif (preg_match('/専用.*ソケット式ケーブル/u', $item)) {
+            return [1, 10, '電源ケーブル'];
+        } elseif (preg_match('/専用.*マグネット式ケーブル/u', $item)) {
+            return [1, 11, '電源ケーブル'];
+        } elseif (preg_match('/あさくま/u', $item)) {
             return [2, 12, '食品'];
+        } elseif (preg_match('/クエン酸/u', $item)) {
+            return [2, 13, 'クエン酸クリーナー'];
+        } elseif (preg_match('/蒸留水器[\s+]*専用.*ノズル.*黒用/u', $item)) {
+            return [2, 14, '蒸留水器　ノズル'];
         } elseif (preg_match('/専用.*ノズル/u', $item)) {
-            return [2, 13, '蒸留水器　ノズル'];
-        } elseif (preg_match('/ポリ容器/u', $item)) {
-            return [3, 20, 'ポリ容器'];
-        } elseif (preg_match('/井戸.*パイプ/u', $item)) {
-            return [3, 21, '井戸パイプ'];
-        } elseif (preg_match('/ガラス容器/u', $item)) {
-            return [3, 22, 'ガラス容器'];
+            return [2, 15, '蒸留水器　ノズル'];
+        } elseif (preg_match('/ガラス.*容器.*白.*新モデル/u', $item)) {
+            return [3, 16, 'ガラス容器'];
+        } elseif (preg_match('/ガラス.*容器.*蓋と取っ手は濃紺/u', $item)) {
+            return [3, 17, 'ガラス容器'];
+        } elseif (preg_match('/ポリ容器.*台湾メガホーム/u', $item)) {
+            return [3, 18, 'ポリ容器'];
+        } elseif (preg_match('/MH943TWS-10M-P/u', $item)) {
+            return [3, 19, '蒸留水器'];
+        } elseif (preg_match('/MH943SBS-10M-G/u', $item)) {
+            return [3, 20, '蒸留水器'];
+        } elseif (preg_match('/MH943SWS-10M-G/u', $item)) {
+            return [3, 21, '蒸留水器'];
+        } elseif (preg_match('/MH943SWS-10M-P/u', $item)) {
+            return [3, 22, '蒸留水器'];
+        } elseif (preg_match('/MH943TWS-10M-G/u', $item)) {
+            return [3, 23, '蒸留水器'];
+        } elseif (preg_match('/MH943SBS-10M-P/u', $item)) {
+            return [3, 24, '蒸留水器'];
+        } elseif (preg_match('/MH943TWS-G/u', $item)) {
+            return [3, 25, '蒸留水器'];
         } elseif (preg_match('/埃掃除サービス/u', $item)) {
-            return [3, 23, 'ホコリ取りサービス'];
-
-        } elseif (preg_match('/ステンレスボディ/u', $item) || preg_match('/スチールボディ/u', $item)) {
-            //dd("dddd");
-            return [3, 30, '蒸留水器'];
+            return [3, 26, 'ホコリ取りサービス'];
+        } elseif (preg_match('/4本セット[\s+]*井戸.*パイプ/u', $item)) {
+            return [3, 27, '井戸パイプ'];
+        } elseif (preg_match('/2本セット[\s+]*井戸.*パイプ/u', $item)) {
+            return [3, 28, '井戸パイプ'];
+        } elseif (preg_match('/井戸.*パイプ/u', $item)) {
+            return [3, 29, '井戸パイプ'];
         }
         return [3, 30, '蒸留水器'];
     }
