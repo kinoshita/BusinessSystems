@@ -38,5 +38,23 @@ class RakutenItem extends Model
         ];
     }
 
+    public function csvExchangeHeaderAllOutput(): array
+    {
+        return [
+            "注文番号",
+            "注文者姓名",
+            "送付先郵便番号",
+            "送付先姓名",
+            "送付先住所都道府県",
+            "送付先住所郡市区",
+            "送付先住所それ以降の住所",
+            "送付先電話番号",
+            "個数",
+            "商品名",
+            "単価",
+            "商品合計金額"
+        ];
+    }
+
 
 }

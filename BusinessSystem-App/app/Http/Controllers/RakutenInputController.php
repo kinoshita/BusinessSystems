@@ -207,42 +207,78 @@ class RakutenInputController extends Controller
 
     private function getType($item)
     {
-        $item = preg_replace('/\s+/u', '', $item);
-        if (preg_match('/活性炭パック/u', $item)) {
-            return [1, 1, '活性炭パック'];
-        } elseif (preg_match('/ゴムパッキン/u', $item)) {
-            return [1, 3, 'ゴムパッキン'];
-        } elseif (preg_match('/オドレミン/u', $item)) {
+        if (preg_match('/２個セット.*あさくま/u', $item)) {
+            return [1, 1, '食品'];
+        } elseif (preg_match('/２本セット[\s+]*オドレミン/u', $item)) {
+            return [1, 2, 'ボディクリーム'];
+        } elseif (preg_match('/３本セット[\s+]*オドレミン/u', $item)) {
+            return [1, 3, 'ボディクリーム'];
+        } elseif (preg_match('/５本セット[\s+]*オドレミン/u', $item)) {
             return [1, 4, 'ボディクリーム'];
-        } elseif (preg_match('/２個セット.*あさくま/u', $item)) {
-            return [1, 5, '食品'];
-        } elseif (preg_match('/温熱シート/u', $item)) {
-            return [1, 6, '温熱シート'];
-        } elseif (preg_match('/リップスティック/u', $item)) {
-            return [1, 7, '化粧品'];
-        } elseif (preg_match('/クエン酸/u', $item)) {
-            return [2, 10, 'クエン酸クリーナー'];
-        } elseif (preg_match('/蒸留水器[\s+]*専用ノズル/u', $item)) {
-            return [2, 11, '蒸留水器ノズル'];
-        } elseif (preg_match('/蒸留水器[\s+]*専用[\s+]*ノズル/u', $item)) {
-            return [2, 11, '蒸留水器ノズル'];
-        } elseif (preg_match('/６個セット.*あさくま/u', $item)){
-            return [2, 12, '食品'];
-        } elseif (preg_match('/蒸留水器.*専用.*電源ケーブル/u', $item)) {
-            return [2, 13, '電源ケーブル'];
-        } elseif (preg_match('/ポリ容器/u', $item)) {
-            return [3, 20, 'ポリ容器'];
-        } elseif (preg_match('/井戸.*パイプ/u', $item)) {
-            return [3, 21, '井戸パイプ'];
-        } elseif (preg_match('/ガラス容器/u', $item)) {
-            return [3, 22, 'ガラス容器'];
+        } elseif (preg_match('/オドレミン/u', $item)) {
+            return [1, 5, 'ボディクリーム'];
+        } elseif (preg_match('/メガホーム.*蒸留水器.*専用.*ソケット式.*電源ケーブル/u', $item)) {
+            return [1, 6, '電源ケーブル'];
+        } elseif (preg_match('/メガホーム.*蒸留水器.*専用.*マグネット式.*電源ケーブル.*/u', $item)) {
+            return [1, 7, '電源ケーブル'];
+        } elseif (preg_match('/ゴムパッキン/u', $item)) {
+            return [1, 8, 'ゴムパッキン'];
+        } elseif (preg_match('/活性炭パック[\s+]*12個入り/u', $item)) {
+            return [1, 9, '活性炭パック'];
+        } elseif (preg_match('/活性炭パック/u', $item)) {
+            return [1, 10, '活性炭パック'];
+        } elseif (preg_match('/活性炭パック/u', $item)) {
+            return [1, 10, '活性炭パック'];
+        } elseif (preg_match('/旧タイプ特価.*10枚セット.*めぐりズム/u', $item)) {
+            return [1, 14, '温熱シート'];
+        } elseif (preg_match('/旧タイプ特価.*8枚セット.*めぐりズム/u', $item)) {
+            return [1, 13, '温熱シート'];
+        } elseif (preg_match('/10枚セット.*めぐりズム.*直接/u', $item)) {
+            return [1, 11, '温熱シート'];
+        } elseif (preg_match('/10枚セット.*めぐりズム.*内側面/u', $item)) {
+            return [1, 12, '温熱シート'];
+        } elseif (preg_match('/リップスティック /u', $item)) {
+            return [1, 15, '化粧品'];
+        } elseif (preg_match('/あさくま/u', $item)) {
+            return [2, 16, '食品'];
+        } elseif (preg_match('/２本セット.*クエン酸クリーナー/u', $item)) {
+            return [2, 18, 'クエン酸クリーナー'];
+        } elseif (preg_match('/クエン酸 /u', $item)) {
+            return [2, 17, 'クエン酸クリーナー'];
+        } elseif (preg_match('/ノズル[\s+]*磁器.*黒用/u', $item)) {
+            return [2, 19, '蒸留水器　ノズル'];
+        } elseif (preg_match('/ノズル[\s+]*磁器.*白用/u', $item)) {
+            return [2, 20, '蒸留水器　ノズル'];
+        } elseif (preg_match('/ノズル[\s+]*ガラス.*黒用/u', $item)) {
+            return [2, 21, '蒸留水器　ノズル'];
+        } elseif (preg_match('/ノズル[\s+]*ガラス.*白用/u', $item)) {
+            return [2, 22, '蒸留水器　ノズル'];
         } elseif (preg_match('/埃掃除サービス/u', $item)) {
             return [3, 23, '埃取りサービス'];
-
-
-        } elseif (preg_match('/ステンレスボディ/u', $item) || preg_match('/スチールボディ/u', $item)) {
-            //dd("dddd");
+        } elseif (preg_match('/ガラス.*蓋と取っ手は濃紺.*新モデル/u', $item)) {
+            return [3, 24, 'ガラス容器'];
+        } elseif (preg_match('/ガラス.*白.*新モデル/u', $item)) {
+            return [3, 25, 'ガラス容器'];
+        } elseif (preg_match('/蒸留水器.*BPAフリー/u', $item)) {
+            return [3, 26, 'ポリ容器'];
+        } elseif (preg_match('/TAIWAN.*MH943TWS-10M-G/u', $item)) {
+            return [3, 34, '埃取りサービス'];
+        } elseif (preg_match('/MH943SWS-10M-P/u', $item)) {
+            return [3, 27, '蒸留水器'];
+        } elseif (preg_match('/MH943TWS-10M-P/u', $item)) {
+            return [3, 28, '蒸留水器'];
+        } elseif (preg_match('/MH943TWS-10M-G/u', $item)) {
+            return [3, 29, '蒸留水器'];
+        } elseif (preg_match('/MH943SBS-10M-G/u', $item)) {
             return [3, 30, '蒸留水器'];
+        } elseif (preg_match('/MH943SBS-10M-P/u', $item)) {
+            return [3, 31, '蒸留水器'];
+        } elseif (preg_match('/MH943SWS-10M-G/u', $item)) {
+            return [3, 32, '蒸留水器'];
+        } elseif (preg_match('/MH943SWS-P/u', $item)) {
+            return [3, 35, '蒸留水器'];
+        } elseif (preg_match('/井戸.*パイプ/u', $item)) {
+            return [3, 33, '井戸パイプ'];
         }
         //dd($item);
         return [3, 30, '蒸留水器'];

@@ -227,9 +227,9 @@ class YahooDownloadController extends Controller
             ->sortBy(fn($d) => (int)$d->file_type)
             ->values();
 
+        //$csvHeaderMain = $header_main->csvExchangeHeaderMain();
+        $csvHeaderMain = $header_main->csvExchangeHeaderMainForAllOutput();
 
-
-        $csvHeaderMain = $header_main->csvExchangeHeaderMain();
         $csvData = $yahoo_data;
         $csvFileName = "Yahoo全出力リスト";
         $csvPath = storage_path("app/private/files/yahoo/{$csvFileName}.csv");
@@ -269,7 +269,7 @@ class YahooDownloadController extends Controller
             $value = $item_detail->parent;
 
             $row_data = [
-                $value->OrderId,
+                //$value->OrderId,
                 $value->BillName,
                 $value->ShipZipCode,
                 $value->ShipName,
@@ -277,16 +277,15 @@ class YahooDownloadController extends Controller
                 $value->ShipCity,
                 $value->ShipAddress1,
                 $value->ShipAddress2,
-                $value->ShipSection1,
-                $value->ShipSection2,
+                //$value->ShipSection1,
+                //$value->ShipSection2,
                 $this->normalizePhone($value->ShipPhoneNumber),
-                $value->QuantityDetail,
-                Carbon::parse($value->OrderTime)->format('Y/m/d H:i:s'),
-                $value->BillMailAddress,
-
+                //$value->QuantityDetail,
+                //Carbon::parse($value->OrderTime)->format('Y/m/d H:i:s'),
+                //$value->BillMailAddress,
                 $item_detail->Title,
-                $value->SubCode,
-                $value->Quantity,
+                //$value->SubCode,
+                $item_detail->Quantity,
             ];
             fputcsv($file, $this->convertEncoding($row_data));
         }

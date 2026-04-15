@@ -45,14 +45,15 @@ class RakutenDownloadController extends Controller
         $query = DB::table('rakuten_data')
             ->select(['rakuten_data.*'])
             ->where('execute_rakuten_id', $rakuten_id)
-            ->orderBy('type')
+            ->orderByRaw('CAST(type AS UNSIGNED) ASC')
             ->get();
 
         $header = new RakutenItem();
         $manage = new ExecuteRakutenManage();
-        $csvHeader = $header->csvExchangeHeader();
+        //$csvHeader = $header->csvExchangeHeader();
+        $csvHeader = $header->csvExchangeHeaderAllOutput();
         $csvData = $query;
-
+//dd($csvData);
         $csvFileName = "楽天全出力リスト";
         //$csvPath = storage_path("app/private/files/{$csvFileName}.csv");
 
@@ -69,18 +70,13 @@ class RakutenDownloadController extends Controller
 
             $row_data = [
                 $row->order_id,
-                $row->order_last_name,
-                $row->order_first_name,
-                $row->post_code_1,
-                $row->post_code_2,
-                $row->destination_last_name,
-                $row->destination_first_name,
+                $row->order_last_name . ' '. $row->order_first_name ,
+                $row->post_code_1 . '-' . $row->post_code_2,
+                $row->destination_last_name . ' '. $row->destination_first_name,
                 $row->prefectures,
                 $row->city,
                 $row->address,
-                $row->telephone_number_1,
-                $row->telephone_number_2,
-                $row->telephone_number_3,
+                $row->telephone_number_1 . '-' . $row->telephone_number_2 . '-' . $row->telephone_number_3,
                 $row->quantity,
                 $row->product_name,
                 $row->unit_price,
@@ -117,7 +113,7 @@ class RakutenDownloadController extends Controller
             ->where('file_type', '1')
             ->orderBy('product_name')
             ->get();
-
+dd($query);
         $header = new ClickPost();
         $manage = new ExecuteRakutenManage();
         $csvHeader = $header->csvHeader();

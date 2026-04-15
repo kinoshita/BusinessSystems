@@ -96,6 +96,26 @@ class YahooItem extends Model
         ];
     }
 
+    public function csvExchangeHeaderMainForAllOutput():array
+    {
+        return [
+            'BillName',
+            'ShipZipCode',
+            'ShipName',
+            'ShipPrefecture',
+            'ShipCity',
+            'ShipAddress1',
+            'ShipAddress2',
+            'ShipPhoneNumber',
+           // 'OrderTime',
+            'Title',
+            'Quantity',
+        ];
+    }
+
+
+
+
     public function csvProcessingWorkHeaderMain():array
     {
         return [
