@@ -14,12 +14,31 @@ class YahooItem extends Model
         'id'
     ];
 
-    public function yahooItemDetail()
+    public function YahooItemDetail()
     {
-        return $this->hasMany(YahooItemDetail::class, 'OrderId', 'OrderId');
+        return $this->hasMany(YahooItemDetail::class, 'OrderId', 'OrderId')
+            ->orderByRaw('CAST(type AS UNSIGNED) ASC');
     }
 
     public function getYahooItem($yahoo_id)
+    {
+        $yahoo_data = YahooItem::where('execute_yahoo_id', $yahoo_id)
+            ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id);
+            })
+            ->with(['YahooItemDetail' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC');
+            }])
+            ->withMin(['YahooItemDetail as min_type' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id);
+            }], 'type')
+            ->orderByRaw('CAST(min_type AS UNSIGNED) ASC')
+            ->get();
+        return $yahoo_data;
+    }
+
+    public function getYahooItemByOrderId($yahoo_id)
     {
         $yahoo_data = YahooItem::with([
             'YahooItemDetail' => function ($query) use ($yahoo_id) {
@@ -27,10 +46,12 @@ class YahooItem extends Model
             }
         ])
             ->where('execute_yahoo_id', $yahoo_id)
+            ->orderBy('OrderId', 'asc')
             //->orderBy('type')
             ->get();
         return $yahoo_data;
     }
+
 
     public function csvExchangeHeader():array
     {
@@ -47,6 +68,7 @@ class YahooItem extends Model
             'ShipSection2',
             'ShipPhoneNumber',
             'QuantityDetail',
+            'OrderTime',
             'BillMailAddress',
         ];
     }
@@ -66,6 +88,7 @@ class YahooItem extends Model
             'ShipSection2',
             'ShipPhoneNumber',
             'QuantityDetail',
+            'OrderTime',
             'BillMailAddress',
             'Title',
             'SubCode',
@@ -94,10 +117,13 @@ class YahooItem extends Model
             'SubCode',
             'Quantity',
             'ID確認',
+            'OrderTime',
             'BillMailAddress',
 
         ];
     }
+
+
 
 
 }

@@ -12,6 +12,7 @@ use App\Models\RakutenItem;
 use App\Models\YahooItem;
 use App\Models\YahooItemDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -47,18 +48,25 @@ class YahooDownloadController extends Controller
     private function getLetterPackPrintExcel($yahoo_id)
     {
 
-        $yahoo_data = YahooItem::with([
-            'YahooItemDetail' => function ($query)  use ($yahoo_id) {
-                $query->where('execute_yahoo_id', $yahoo_id)
-                    ->where('file_type', '2');
-            }])
-            ->where('execute_yahoo_id', $yahoo_id)
+
+        $yahoo_data = YahooItem::where('execute_yahoo_id', $yahoo_id)
             ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
                 $query->where('execute_yahoo_id', $yahoo_id)
                     ->where('file_type', '2');
             })
-            //->orderBy('type')
+            ->with(['YahooItemDetail' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', 2) // 🔥 ここ重要
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC');
+            }])
+            ->withMin(['YahooItemDetail as min_type' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', 2); // 🔥 ここ重要
+            }], 'type')
+            ->orderByRaw('CAST(min_type AS UNSIGNED) ASC')
             ->get();
+
+//dd($yahoo_data);
         $output_name = 'Yahooレターパック(印刷用)';
 
         Log::info("test test");
@@ -117,6 +125,7 @@ class YahooDownloadController extends Controller
      */
     private function getLetterPack($yahoo_id)
     {
+        /*
         $yahoo_data = YahooItem::with([
             'YahooItemDetail' => function ($query) use ($yahoo_id) {
                 $query->where('execute_yahoo_id', $yahoo_id)
@@ -126,6 +135,41 @@ class YahooDownloadController extends Controller
             ->where('execute_yahoo_id', $yahoo_id)
             //->orderBy('type')
             ->get();
+        */
+        /*
+        $yahoo_data = YahooItem::where('execute_yahoo_id', $yahoo_id)
+            ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', '2');
+            })
+            ->with(['YahooItemDetail' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC');
+            }])
+            ->withMin(['YahooItemDetail as min_type' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id);
+            }], 'type')
+            ->orderByRaw('CAST(min_type AS UNSIGNED) ASC')
+            ->get();
+        */
+        $yahoo_data = YahooItem::where('execute_yahoo_id', $yahoo_id)
+            ->whereHas('yahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', 2);
+            })
+            ->with(['yahooItemDetail' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', 2) // 🔥 ここ重要
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC');
+            }])
+            ->withMin(['yahooItemDetail as min_type' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', 2); // 🔥 これも揃える
+            }], 'type')
+            ->orderByRaw('CAST(min_type AS UNSIGNED) ASC')
+            ->get();
+//
+//dd($yahoo_data);
         // ヘッダ取得
         $header = new LetterPack();
         $csvHeader = $header->csvHeader();
@@ -135,7 +179,7 @@ class YahooDownloadController extends Controller
         fputcsv($file, $this->convertEncoding($csvHeader));
         $row_data = [];
         foreach ($yahoo_data as $main_index => $row) {
-            foreach ($row->YahooItemDetail as $item_index => $row_detail) {
+           // foreach ($row->YahooItemDetail as $item_index => $row_detail) {
                 $row_data = [
                     $row->ShipZipCode,
                     $row->ShipName,
@@ -148,7 +192,7 @@ class YahooDownloadController extends Controller
                     $this->normalizePhone($row->ShipPhoneNumber),
                 ];
                 fputcsv($file, $this->convertEncoding($row_data));
-            }
+            //}
         }
         fclose($file);
     }
@@ -170,13 +214,28 @@ class YahooDownloadController extends Controller
 
         $yahoo_data = $header_main->getYahooItem($yahoo_id);
 
+        $all_details = collect($yahoo_data)
+            ->flatMap(function ($item) {
+                return $item->YahooItemDetail->map(function ($detail) use ($item) {
+                    $detail->parent = $item;
+                    return $detail;
+                });
+            });
+
+        $sorted_details = $all_details
+            ->sortBy(fn($d) => (int)$d->type)
+            ->sortBy(fn($d) => (int)$d->file_type)
+            ->values();
+
+
+
         $csvHeaderMain = $header_main->csvExchangeHeaderMain();
         $csvData = $yahoo_data;
         $csvFileName = "Yahoo全出力リスト";
         $csvPath = storage_path("app/private/files/yahoo/{$csvFileName}.csv");
         $file = fopen($csvPath, 'w');
         fputcsv($file, $this->convertEncoding($csvHeaderMain));
-
+/*
         foreach ($yahoo_data as $main_index => $row) {
             $row_data = [];
             foreach ($row->YahooItemDetail as $item_index => $row_detail) {
@@ -193,6 +252,7 @@ class YahooDownloadController extends Controller
                     $row->ShipSection2,
                     $this->normalizePhone($row->ShipPhoneNumber),
                     $row->QuantityDetail,
+                    Carbon::parse($row->OrderTime)->format('Y/m/d H:i:s'),
                     $row->BillMailAddress,
 
                     $row_detail->Title,
@@ -201,7 +261,39 @@ class YahooDownloadController extends Controller
                 ];
                 fputcsv($file, $this->convertEncoding($row_data));
             }
+
         }
+*/
+
+        foreach ($sorted_details as $item_detail) {
+            $value = $item_detail->parent;
+
+            $row_data = [
+                $value->OrderId,
+                $value->BillName,
+                $value->ShipZipCode,
+                $value->ShipName,
+                $value->ShipPrefecture,
+                $value->ShipCity,
+                $value->ShipAddress1,
+                $value->ShipAddress2,
+                $value->ShipSection1,
+                $value->ShipSection2,
+                $this->normalizePhone($value->ShipPhoneNumber),
+                $value->QuantityDetail,
+                Carbon::parse($value->OrderTime)->format('Y/m/d H:i:s'),
+                $value->BillMailAddress,
+
+                $item_detail->Title,
+                $value->SubCode,
+                $value->Quantity,
+            ];
+            fputcsv($file, $this->convertEncoding($row_data));
+        }
+
+
+
+
         fclose($file);
     }
 
@@ -224,7 +316,10 @@ class YahooDownloadController extends Controller
         */
         $header_main = new YahooItem();
 
-        $yahoo_data = $header_main->getYahooItem($yahoo_id);
+        $yahoo_data = $header_main->getYahooItemByOrderId($yahoo_id);
+
+
+
 
         $csvHeaderMain = $header_main->csvProcessingWorkHeaderMain();
         $csvData = $yahoo_data;
@@ -256,6 +351,7 @@ class YahooDownloadController extends Controller
                     $row_detail->SubCode,
                     $row_detail->Quantity,
                     '',
+                    Carbon::parse($row->OrderTime)->format('Y/m/d H:i:s'),
                     $row->BillMailAddress,
                 ];
                 fputcsv($file, $this->convertEncoding($row_data));
@@ -265,7 +361,7 @@ class YahooDownloadController extends Controller
     }
     private function getClickPost($yahoo_id)
     {
-
+/*
         $yahoo_data = YahooItem::with([
             'YahooItemDetail' => function ($query) use ($yahoo_id) {
                 $query->where('execute_yahoo_id', $yahoo_id)
@@ -277,10 +373,30 @@ class YahooDownloadController extends Controller
             ->where('execute_yahoo_id', $yahoo_id)
             //->orderBy('type')
             ->get();
+*/
         /*
         $yahoo = new YahooItem();
         $yahoo_data  = $yahoo->getYahooItem($yahoo_id);
 */
+        $yahoo_data = YahooItem::where('execute_yahoo_id', $yahoo_id)
+            ->whereHas('YahooItemDetail', function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->where('file_type', '1');
+            })
+            ->with(['YahooItemDetail' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                    ->orderByRaw('CAST(type AS UNSIGNED) ASC')
+                    ->where('file_type', '1');
+            }])
+            ->withMin(['YahooItemDetail as min_type' => function ($query) use ($yahoo_id) {
+                $query->where('execute_yahoo_id', $yahoo_id)
+                ->where('file_type', '1');
+            }], 'type')
+            ->orderByRaw('CAST(min_type AS UNSIGNED) ASC')
+            ->get();
+
+
+
         $header = new ClickPost();
         $csvHeader = $header->csvHeader();
 

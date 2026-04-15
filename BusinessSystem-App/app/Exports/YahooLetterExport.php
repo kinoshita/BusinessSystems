@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class YahooLetterExport implements WithEvents
 {
@@ -96,6 +97,7 @@ class YahooLetterExport implements WithEvents
                     $end_line = 40 + $plus * $i;
                     $event->sheet->getDelegate()
                         ->getStyle("A{$start_line}:A{$end_line}")
+                        ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)
                         ->applyFromArray([
                             'borders' => [
                                 'left' => [
@@ -107,6 +109,7 @@ class YahooLetterExport implements WithEvents
 
                     $event->sheet->getDelegate()
                         ->getStyle("D{$start_line}:D{$end_line}")
+                        ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)
                         ->applyFromArray([
                             'borders' => [
                                 'left' => [
@@ -134,6 +137,7 @@ class YahooLetterExport implements WithEvents
                 foreach ($this->data as $key => $value) {
 //dd($value);
                     // QuantityDetail Collection の中身は1件の文字列として入っている
+                    /*
                     $qtyString = $value["QuantityDetail"] ?? '';
 
                     // L1=1&L2=1 の形を分割して配列に変換
@@ -141,8 +145,8 @@ class YahooLetterExport implements WithEvents
                         [$k, $v] = explode('=', $item);
                         return [$k => $v];
                     });
-
-                    foreach ($qtyArray as $detailKey => $detailValue) {
+                    */
+                    //foreach ($qtyArray as $detailKey => $detailValue) {
 
                         // ---- ここから元のロジックに組み込む ----
                         // 左右切替判定（書く前に判定）
@@ -177,7 +181,7 @@ class YahooLetterExport implements WithEvents
                         $highestRow = $sheet->getHighestRow();
                         $sheet->getPageSetup()->setPrintArea("A1:F{$highestRow}");
                         $key_base++;
-                    }
+                  //  }
                 }
             }
         ];

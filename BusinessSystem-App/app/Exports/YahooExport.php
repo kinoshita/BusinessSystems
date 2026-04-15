@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
@@ -84,7 +85,7 @@ class YahooExport implements WithEvents
                 $recipient_counts = collect($this->data)->groupBy('ShipName')->map->count();
                 $duplicates = $recipient_counts->filter(fn($count) => $count > 1)->keys();
 
-
+/*
                 foreach ($this->data as $key => $value) {
                     $qty_details = [];
                     if (!empty($value->QuantityDetail)) {
@@ -149,6 +150,81 @@ class YahooExport implements WithEvents
                         }
                     }
 
+                }
+*/
+
+
+                $all_details = collect($this->data)
+                    ->flatMap(function ($item) {
+                        $qty_details = [];
+                        if (!empty($item->QuantityDetail)) {
+                            parse_str($item->QuantityDetail, $qty_details);
+                        }
+
+                        $has_multiple_qty = count($qty_details) > 1;
+
+                        return $item->YahooItemDetail->map(function ($detail) use ($item, $has_multiple_qty) {
+                            $detail->parent = $item;
+                            $detail->has_multiple_qty = $has_multiple_qty; // ← 追加
+                            return $detail;
+                        });
+                    });
+                $sorted_details = $all_details
+                    ->sortBy(fn($d) => (int)$d->type)
+                    ->sortBy(fn($d) => (int)$d->file_type)
+                    ->values();
+
+
+Log::info('sort');
+Log::info($sorted_details);
+
+/*dd( $sorted_details->map(fn($d) => [
+    'file_type' => $d->file_type,
+    'type' => $d->type,
+    'OrderId' => $d->OrderId,
+])->toArray());
+*/
+                $before_file_type = null;
+                foreach ($sorted_details as $item_detail) {
+
+
+
+                    $value = $item_detail->parent;
+                    $has_multiple_qty = $item_detail->has_multiple_qty;
+                    // 🔴 file_typeが変わったら改行
+                    if (!is_null($before_file_type) && $before_file_type != $item_detail->file_type) {
+                        $count++; // ← 空行を1つ入れる
+                    }
+
+                    $event->sheet->setCellValue("A{$count}", $total_count);
+
+                    // file_typeごとのカウント
+                    $inner_count = $type_count[$item_detail->file_type] ?? 0;
+                    $event->sheet->setCellValue("B{$count}", $inner_count);
+
+                    $event->sheet->setCellValue("C{$count}", $value->BillName);
+                    $event->sheet->setCellValue("E{$count}", $value->ShipName);
+
+                    // 🔴 重複 or 複数数量なら赤
+                    if ($duplicates->contains($value->ShipName) || $has_multiple_qty) {
+                        $event->sheet->getStyle("E{$count}")
+                            ->applyFromArray([
+                                'font' => [
+                                    'color' => ['rgb' => 'FF0000'],
+                                ],
+                            ]);
+                    }
+                    $event->sheet->setCellValue("F{$count}", $item_detail->Quantity);
+                    $event->sheet->setCellValue("G{$count}", $item_detail->Title);
+
+                    // 更新
+                    $before_file_type = $item_detail->file_type;
+                    $count++;
+                    $total_count++;
+
+                    // カウント更新
+                    $type = $item_detail->file_type;
+                    $type_count[$type] = ($type_count[$type] ?? 0) + 1;
                 }
 
             }

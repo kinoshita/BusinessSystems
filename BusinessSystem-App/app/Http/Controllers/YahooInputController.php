@@ -193,6 +193,7 @@ class YahooInputController extends Controller
                     'ShipSection2' => $item['ShipSection2'] ?? '',
                     'ShipPhoneNumber' => $item['ShipPhoneNumber'],
                     'QuantityDetail' => $item['QuantityDetail'],
+                    'OrderTime' => $item['OrderTime'],
                     'BillMailAddress' => $item['BillMailAddress'],
 
                 ]);
