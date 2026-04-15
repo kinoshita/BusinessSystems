@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RakutenExport;
+use App\Exports\YahooAllListExport;
 use App\Exports\YahooExport;
 use App\Exports\YahooLetterExport;
 use App\Models\ClickPost;
@@ -210,6 +211,7 @@ class YahooDownloadController extends Controller
             //->orderBy('type')
             ->get();
         */
+        /*
         $header_main = new YahooItem();
 
         $yahoo_data = $header_main->getYahooItem($yahoo_id);
@@ -235,6 +237,7 @@ class YahooDownloadController extends Controller
         $csvPath = storage_path("app/private/files/yahoo/{$csvFileName}.csv");
         $file = fopen($csvPath, 'w');
         fputcsv($file, $this->convertEncoding($csvHeaderMain));
+        */
 /*
         foreach ($yahoo_data as $main_index => $row) {
             $row_data = [];
@@ -264,7 +267,7 @@ class YahooDownloadController extends Controller
 
         }
 */
-
+/*
         foreach ($sorted_details as $item_detail) {
             $value = $item_detail->parent;
 
@@ -294,6 +297,9 @@ class YahooDownloadController extends Controller
 
 
         fclose($file);
+*/
+        $output_name = "Yahoo全出力リスト";
+        Excel::store(new YahooAllListExport($yahoo_id), "files/yahoo/{$output_name}.xlsx");
     }
 
     /**

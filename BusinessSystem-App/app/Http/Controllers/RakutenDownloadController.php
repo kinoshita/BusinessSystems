@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RakutenAllListExport;
 use App\Exports\RakutenExport;
 use App\Exports\RakutenLetterExport;
 use App\Models\ClickPost;
@@ -42,6 +43,7 @@ class RakutenDownloadController extends Controller
 
     private function getBaseFileForRakuten($rakuten_id)
     {
+        /*
         $query = DB::table('rakuten_data')
             ->select(['rakuten_data.*'])
             ->where('execute_rakuten_id', $rakuten_id)
@@ -85,8 +87,10 @@ class RakutenDownloadController extends Controller
             fputcsv($file, $this->convertEncoding($row_data));
         }
         fclose($file);
+        */
+        $output_name = "楽天全出力リスト";
+        Excel::store(new RakutenAllListExport($rakuten_id), "files/rakuten/{$output_name}.xlsx");
     }
-
 
     private function getLetterPackPrintExcel($id)
     {
@@ -113,7 +117,7 @@ class RakutenDownloadController extends Controller
             ->where('file_type', '1')
             ->orderBy('product_name')
             ->get();
-dd($query);
+//dd($query);
         $header = new ClickPost();
         $manage = new ExecuteRakutenManage();
         $csvHeader = $header->csvHeader();
