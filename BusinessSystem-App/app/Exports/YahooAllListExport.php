@@ -51,8 +51,8 @@ class YahooAllListExport implements FromCollection, WithHeadings, ShouldAutoSize
                 $value->ShipAddress1,
                 $value->ShipAddress2,
                 $this->normalizePhone($value->ShipPhoneNumber),
-                $item_detail->Title,
                 $item_detail->Quantity,
+                $item_detail->Title,
             ];
         });
     }
@@ -68,8 +68,9 @@ class YahooAllListExport implements FromCollection, WithHeadings, ShouldAutoSize
             'ShipAddress1',
             'ShipAddress2',
             'ShipPhoneNumber',
-            'Title',
             'Quantity',
+            'Title',
+
         ];
     }
     private function normalizePhone($tel)
