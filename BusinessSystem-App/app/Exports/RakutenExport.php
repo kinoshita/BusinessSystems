@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
@@ -81,9 +82,18 @@ class RakutenExport implements WithEvents
 
 
 
-                $recipient_counts = collect($this->data)->groupBy('recipient_name')->map->count();
+                //$recipient_counts = collect($this->data)->groupBy('recipient_name')->map->count();
+                $recipient_counts = collect($this->data)
+                    ->groupBy(function ($item) {
+                        return $item->destination_last_name . $item->destination_first_name;
+                    })
+                    ->map->count();
+
                 $duplicates = $recipient_counts->filter(fn($count) => $count > 1)->keys();
 
+Log::info("Dupliacte");
+Log::info($recipient_counts);
+Log::info($duplicates);
 
                 foreach ($this->data as $key => $value) {
 
