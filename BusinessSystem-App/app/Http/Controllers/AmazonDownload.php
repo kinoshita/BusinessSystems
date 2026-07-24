@@ -259,7 +259,7 @@ class AmazonDownload extends Controller
 
 
         // return Excel::download(new AmazonExport($query), 'products.xlsx');
-        $output_name = '出荷リスト';
+        $output_name = '出荷リスト(amazon)';
         Excel::store(
             new AmazonExport($query), "files/{$output_name}.xlsx"
         );
