@@ -6,6 +6,7 @@ use App\Exports\AmazonLetterExport;
 use App\Exports\AmazonExport;
 use App\Exports\AmazonYamatoExport;
 use App\Models\AmazonItem;
+use App\Models\AmazonYamatoExcelItem;
 use App\Models\AmazonYamatoItem;
 use App\Models\ClickPost;
 use App\Models\LetterPack;
@@ -417,6 +418,7 @@ class AmazonDownload extends Controller
                  "buyer-phone-number as buyer_phone_number",
                  "sku",
                  "product-name as product_name",
+                 "内容品",
                  "quantity-purchased as quantity_purchased",
                  "quantity-shipped as quantity_shipped",
                  "quantity-to-ship as quantity_to_ship",
@@ -444,7 +446,7 @@ class AmazonDownload extends Controller
              //->orderBy('type',)
              ->get();
 
-        $yamato = new AmazonYamatoItem();
+        $yamato = new AmazonYamatoExcelItem();
         $header  = $yamato->csvHeaderForExcelExport();
 
 

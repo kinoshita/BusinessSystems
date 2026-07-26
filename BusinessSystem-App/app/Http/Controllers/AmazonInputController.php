@@ -87,6 +87,7 @@ class AmazonInputController extends Controller
             // 必要なヘッダーだけ抽出し、定義された順に並べる
             return $after_header->mapWithKeys(fn($h) => [$h => $assoc->get($h)]);
         });
+//dd($uploadedData);
 
         // yamato用データのみ
         $yamato_items = $uploadedData->map(function ($oneRecord) use ($uploadedHeader) {
@@ -95,7 +96,7 @@ class AmazonInputController extends Controller
             $assoc = $uploadedHeader->combine($record);
             return $assoc;
         });
-
+//dd($yamato_items->toArray());
         Log::info("====- Yamato Items ==== ");
         Log::info($yamato_items);
 
@@ -145,7 +146,7 @@ class AmazonInputController extends Controller
                     $type = $this->getType($y_item["product-name"]);
                     if ($type[0] == '3') {
                         // yamato分のみデータ設定する
-                        $this->setAmazonYamato($execute->id, $y_item);
+                        $this->setAmazonYamato($execute->id, $y_item,$type);
                     }
                 }
 
@@ -163,8 +164,13 @@ class AmazonInputController extends Controller
      *
      *
      */
-    private function setAmazonYamato($execute_id, $item)
+    private function setAmazonYamato($execute_id, $item, $type)
     {
+
+
+        //dd($type[2]);
+
+
         AmazonYamatoItem::create([
             'execute_id' => $execute_id,
             "order-id" => $item["order-id"],
@@ -181,6 +187,7 @@ class AmazonInputController extends Controller
             "buyer-phone-number" => $item["buyer-phone-number"],
             "sku" => $item["sku"],
             "product-name" => $item["product-name"],
+            "内容品" => $item["内容品"] ?? $type[2],
             "quantity-purchased" => $item["quantity-purchased"],
             "quantity-shipped" => $item["quantity-shipped"],
             "quantity-to-ship" => $item["quantity-to-ship"],
